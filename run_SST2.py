@@ -21,8 +21,8 @@ from Processors.SST2Processor import Sst2Processor, sst_data
 def train(model, dataloader, optimizer, criterion, gradient_accumulation_steps, device, label_list):
     epoch_loss = 0
 
-    all_preds = np.array([])
-    all_labels = np.array([])
+    all_preds = np.array([], dtype=int)
+    all_labels = np.array([], dtype=int)
 
     model.train()
 
@@ -60,8 +60,8 @@ def evaluate(model, dataloader, criterion, device, label_list):
 
     model.eval()
 
-    all_preds = np.array([])
-    all_labels = np.array([])
+    all_preds = np.array([], dtype=int)
+    all_labels = np.array([], dtype=int)
 
     epoch_loss = 0
 

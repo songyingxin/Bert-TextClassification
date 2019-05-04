@@ -41,7 +41,8 @@ def classifiction_metric(preds, labels, label_list):
 
     acc = metrics.accuracy_score(preds, labels)
 
-    report = metrics.classification_report(labels, preds, digits=5)
+    report = metrics.classification_report(
+        labels, preds, target_names=label_list, digits=5)
 
     return report, acc
 
