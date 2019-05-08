@@ -38,24 +38,21 @@ class Sst2Processor(DataProcessor):
         return examples
 
 
-def sst_data(data_dir, tokenizer, processor, max_length, train_batch_size, dev_batch_size, test_batch_size):
+def load_data(data_dir, tokenizer, processor, max_length, batch_size, data_type):
 
-    train_examples = processor.get_train_examples(data_dir)
-    dev_examples = processor.get_dev_examples(data_dir)
-    test_examples = processor.get_test_examples(data_dir)
     label_list = processor.get_labels()
 
-    train_features = convert_examples_to_features(
-        train_examples, label_list, max_length, tokenizer)
-    dev_features = convert_examples_to_features(
-        dev_examples, label_list, max_length, tokenizer)
-    test_features = convert_examples_to_features(
-        test_examples, label_list, max_length, tokenizer)
+    if data_type == "train":
+        examples = processor.get_train_examples(data_dir)
+    elif data_type == "dev":
+        examples = processor.get_dev_examples(data_dir)
+    elif data_type == "test":
+        examples = processor.get_test_examples(data_dir)
+    else:
+        raise RuntimeError("should be train or dev or test")
+    
+    features = convert_examples_to_features(
+        examples, label_list, max_length, tokenizer)
+    dataloader = convert_features_to_tensors(features, batch_size)
 
-    train_dataloader = convert_features_to_tensors(
-        train_features, train_batch_size)
-    dev_dataloader = convert_features_to_tensors(dev_features, dev_batch_size)
-    test_dataloader = convert_features_to_tensors(
-        test_features, test_batch_size)
-
-    return train_dataloader, dev_dataloader,  test_dataloader, label_list, len(train_examples)
+    return dataloader, len(examples)

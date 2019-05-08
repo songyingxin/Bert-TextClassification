@@ -1,7 +1,7 @@
 import argparse
 
 
-def get_args(data_dir, output_dir, cache_dir):
+def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir):
 
 
     parser = argparse.ArgumentParser(description='BERT Baseline')
@@ -22,12 +22,12 @@ def get_args(data_dir, output_dir, cache_dir):
                         type=str,
                         help="缓存目录，主要用于模型缓存")
 
-    parser.add_argument("--bert_model",
-                        default="bert-base-uncased",
-                        type=str,
-                        help="Bert pre-trained model selected in the list: bert-base-uncased, "
-                        "bert-large-uncased, bert-base-cased, bert-large-cased, bert-base-multilingual-uncased, "
-                        "bert-base-multilingual-cased, bert-base-chinese.")
+    parser.add_argument("--bert_vocab_file",
+                         default=bert_vocab_file,
+                         type=str)
+    parser.add_argument("--bert_model_dir",
+                         default=bert_model_dir,
+                         type=str)
 
     parser.add_argument('--seed',
                         type=int,
@@ -41,7 +41,7 @@ def get_args(data_dir, output_dir, cache_dir):
                         help="Set this flag if you are using an uncased model.")
 
     parser.add_argument("--max_seq_length",
-                        default=128,
+                        default=150,
                         type=int,
                         help="The maximum total input sequence length after WordPiece tokenization. \n"
                              "Sequences longer than this will be truncated, and sequences shorter \n"
@@ -63,10 +63,9 @@ def get_args(data_dir, output_dir, cache_dir):
                         type=int,
                         help="Total batch size for test.")
 
-    parser.add_argument('--gradient_accumulation_steps', 
-                        type=int, 
-                        default=1,
-                        help="Number of updates steps to accumulate before performing a backward/update pass.")
+    parser.add_argument("--do_train",
+                        action='store_true',
+                        help="Whether to run training.")
 
     parser.add_argument("--num_train_epochs",
                         default=1.0,
@@ -81,8 +80,19 @@ def get_args(data_dir, output_dir, cache_dir):
     parser.add_argument("--learning_rate", 
                         default=5e-5,
                         type=float,
-                        help="Adam 的 学习率"
-    )
+                        help="Adam 的 学习率")
+
+    # 梯度累积
+    parser.add_argument('--gradient_accumulation_steps',
+                        type=int,
+                        default=1,
+                        help="Number of updates steps to accumulate before performing a backward/update pass.")
+
+    parser.add_argument('--loss_scale',
+                        type=float, default=0,
+                        help="Loss scaling to improve fp16 numeric stability. Only used when fp16 set to True.\n"
+                             "0 (default value): dynamic loss scaling.\n"
+                             "Positive power of 2: static loss scaling value.\n")
 
     config = parser.parse_args()
 
