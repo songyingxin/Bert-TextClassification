@@ -1,6 +1,15 @@
+## Introduction
+
+本仓库专注于 Bert  在文本分类领域的应用， 探索在 Bert 之上如何提高文本分类上的表现。
+
+## Requirements
+
+- Pytorch
+- 
+
 ## 数据集
 
-仓库采用了三个数据集，分别是 SStT-2 情感分类， Yelp多标签分类， THUCNews 多标签分类。 
+仓库采用了三个数据集，分别是 SST-2 情感分类， Yelp多标签分类， THUCNews 多标签分类。 
 
 其中，  [THUCNews](http://thuctc.thunlp.org/)  只选取了一个子集， 该子集中包括了10个分类，每个分类6500条数据：
 > - train： 5000 * 10
