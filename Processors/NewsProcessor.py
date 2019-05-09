@@ -41,25 +41,3 @@ class NewsProcessor(DataProcessor):
 
         return examples
 
-
-def cnews_data(data_dir, tokenizer, processor, max_length, train_batch_size, dev_batch_size, test_batch_size):
-
-    train_examples = processor.get_train_examples(data_dir)
-    dev_examples = processor.get_dev_examples(data_dir)
-    test_examples = processor.get_test_examples(data_dir)
-    label_list = processor.get_labels()
-
-    train_features = convert_examples_to_features(
-        train_examples, label_list, max_length, tokenizer)
-    dev_features = convert_examples_to_features(
-        dev_examples, label_list, max_length, tokenizer)
-    test_features = convert_examples_to_features(
-        test_examples, label_list, max_length, tokenizer)
-
-    train_dataloader = convert_features_to_tensors(
-        train_features, train_batch_size)
-    dev_dataloader = convert_features_to_tensors(dev_features, dev_batch_size)
-    test_dataloader = convert_features_to_tensors(
-        test_features, test_batch_size)
-
-    return train_dataloader, dev_dataloader,  test_dataloader, label_list, len(train_examples)

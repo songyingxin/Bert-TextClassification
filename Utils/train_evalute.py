@@ -84,7 +84,7 @@ def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, 
                     torch.save(model_to_save.state_dict(), output_model_file)
                     with open(output_config_file, 'w') as f:
                         f.write(model_to_save.config.to_json_string())
-        writer.close()
+    writer.close()
                     
 
 def evaluate(model, dataloader, criterion, device, label_list):

@@ -13,7 +13,7 @@ from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.modeling import BertForSequenceClassification, BertConfig, WEIGHTS_NAME, CONFIG_NAME
 from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear
 
-from Utils import utils
+from Utils.utils import get_device, load_data
 from BertOrigin import args
 
 from Utils.train_evalute import train, evaluate
@@ -31,7 +31,7 @@ def main(config):
     output_model_file = os.path.join(config.output_dir, WEIGHTS_NAME) # 模型输出文件
     output_config_file = os.path.join(config.output_dir, CONFIG_NAME)
 
-    device, n_gpu = utils.get_device()  # 设备准备
+    device, n_gpu = get_device()  # 设备准备
 
     config.train_batch_size = config.train_batch_size // config.gradient_accumulation_steps
 
@@ -43,7 +43,7 @@ def main(config):
         torch.cuda.manual_seed_all(config.seed)
 
     """ 数据准备 """
-    processor = Sst2Processor()  # processor 选择
+    processor = Sst2Processor()  # 整个文件的代码只需要改此处即可
     tokenizer = BertTokenizer.from_pretrained(
         config.bert_vocab_file, do_lower_case=config.do_lower_case)  # 分词器选择
 
