@@ -1,7 +1,7 @@
 import argparse
 
 
-def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir):
+def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, log_dir):
 
 
     parser = argparse.ArgumentParser(description='BERT Baseline')
@@ -21,6 +21,12 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir):
                         default=cache_dir, 
                         type=str,
                         help="缓存目录，主要用于模型缓存")
+    
+    parser.add_argument("--log_dir",
+                        default=log_dir,
+                        type=str,
+                        help="日志目录，主要用于 tensorboard 分析")
+
 
     parser.add_argument("--bert_vocab_file",
                          default=bert_vocab_file,
@@ -87,6 +93,11 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir):
                         type=int,
                         default=1,
                         help="Number of updates steps to accumulate before performing a backward/update pass.")
+
+    parser.add_argument('--print_step',
+                        type=int,
+                        default=200,
+                        help="多少步进行模型保存以及日志信息写入")
 
     config = parser.parse_args()
 

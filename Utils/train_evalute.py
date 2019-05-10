@@ -8,11 +8,12 @@ import time
 from .utils import classifiction_metric
 
 
-def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, criterion, gradient_accumulation_steps, device, label_list, output_model_file, output_config_file):
+def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, criterion, gradient_accumulation_steps, device, label_list, output_model_file, output_config_file, log_dir, print_step):
 
     model.train()
 
-    writer = SummaryWriter(log_dir='.log/' + str(time.time()))
+    writer = SummaryWriter(
+        log_dir= log_dir + '/' + time.strftime('%H:%M:%S', time.gmtime()))
 
     global_step = 0
     for epoch in range(int(epoch_num)):
@@ -57,24 +58,32 @@ def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, 
                 optimizer.zero_grad()
                 global_step += 1
             
-            if global_step % 100 == 0:
+            if global_step % print_step == 0:
 
                 """ 打印Train此时的信息 """
                 train_loss = epoch_loss / train_steps
-                train_acc, train_f1 = classifiction_metric(all_preds, all_labels, label_list)
+                train_acc, train_report = classifiction_metric(all_preds, all_labels, label_list)
 
-                dev_loss, dev_acc, dev_f1 = evaluate(model, dev_dataloader, criterion, device, label_list)
+                dev_loss, dev_acc, dev_report = evaluate(model, dev_dataloader, criterion, device, label_list)
 
-                c = global_step // 1000
+                c = global_step // print_step
                 writer.add_scalar("loss/train", train_loss, c)
                 writer.add_scalar("loss/dev", dev_loss, c)
 
                 writer.add_scalar("acc/train", train_acc, c)
                 writer.add_scalar("acc/dev", dev_acc, c)
 
-                writer.add_scalar("f1/train", train_f1, c)
-                writer.add_scalar("f1/dev", dev_f1, c)
+                for label in label_list:
+                    writer.add_scalar(label + ":" + "f1/train", train_report[label]['f1-score'], c)
+                    writer.add_scalar(label + ":" + "f1/dev",
+                                      dev_report[label]['f1-score'], c)
 
+                print_list = ['micro avg', 'macro avg', 'weighted avg']
+                for label in print_list:
+                    writer.add_scalar(label + ":" + "f1/train",
+                                      train_report[label]['f1-score'], c)
+                    writer.add_scalar(label + ":" + "f1/dev",
+                                      dev_report[label]['f1-score'], c)
                 
                 if dev_loss < best_dev_loss:
                     best_dev_loss = dev_loss
@@ -115,5 +124,5 @@ def evaluate(model, dataloader, criterion, device, label_list):
 
         epoch_loss += loss.mean().item()
 
-    acc, f1 = classifiction_metric(all_preds, all_labels, label_list)
-    return epoch_loss/len(dataloader), acc, f1
+    acc, report = classifiction_metric(all_preds, all_labels, label_list)
+    return epoch_loss/len(dataloader), acc, report

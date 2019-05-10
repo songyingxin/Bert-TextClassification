@@ -1,22 +1,7 @@
-import spacy
 import time
-import matplotlib.pyplot as plt
-import csv
 from sklearn import metrics
 
 import torch
-
-from torchtext import data
-from torchtext import datasets
-from torchtext import vocab
-
-NLP = spacy.blank("en")
-
-
-def word_tokenize(sent):
-    """ 分词 """
-    doc = NLP(sent)
-    return [token.text for token in doc]
 
 
 def get_device():
@@ -41,26 +26,11 @@ def classifiction_metric(preds, labels, label_list):
 
     acc = metrics.accuracy_score(labels, preds)
 
-    f1 = metrics.f1_score(labels, preds)
+    labels_list = [i for i in range(len(label_list))]
 
-    return acc, f1
+    report = metrics.classification_report(labels, preds, labels=labels_list, target_names=label_list, digits=5, output_dict=True)
+
+    return acc, report
 
 
-def load_data(data_dir, tokenizer, processor, max_length, batch_size, data_type):
 
-    label_list = processor.get_labels()
-
-    if data_type == "train":
-        examples = processor.get_train_examples(data_dir)
-    elif data_type == "dev":
-        examples = processor.get_dev_examples(data_dir)
-    elif data_type == "test":
-        examples = processor.get_test_examples(data_dir)
-    else:
-        raise RuntimeError("should be train or dev or test")
-
-    features = convert_examples_to_features(
-        examples, label_list, max_length, tokenizer)
-    dataloader = convert_features_to_tensors(features, batch_size)
-
-    return dataloader, len(examples)
