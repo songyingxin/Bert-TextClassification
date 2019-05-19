@@ -15,6 +15,8 @@ def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, 
     writer = SummaryWriter(
         log_dir= log_dir + '/' + time.strftime('%H:%M:%S', time.gmtime()))
 
+    best_dev_loss = float('inf')
+
     global_step = 0
     for epoch in range(int(epoch_num)):
         print(f'---------------- Epoch: {epoch+1:02} ----------')
@@ -22,8 +24,6 @@ def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, 
         epoch_loss = 0
 
         train_steps = 0
-
-        best_dev_loss = float('inf')
 
         all_preds = np.array([], dtype=int)
         all_labels = np.array([], dtype=int)
@@ -46,7 +46,7 @@ def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, 
             loss.backward()
 
             """ 用于画图和分析的数据 """
-            epoch_loss += loss.mean().item()
+            epoch_loss += loss.item()
             preds = logits.detach().cpu().numpy()
             outputs = np.argmax(preds, axis=1)
             all_preds = np.append(all_preds, outputs)
@@ -88,7 +88,7 @@ def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, 
                 if dev_loss < best_dev_loss:
                     best_dev_loss = dev_loss
 
-                    model_to_save = model.modules if hasattr(
+                    model_to_save = model.module if hasattr(
                         model, 'module') else model
                     torch.save(model_to_save.state_dict(), output_model_file)
                     with open(output_config_file, 'w') as f:
