@@ -10,7 +10,7 @@ import torch.nn as nn
 
 from pytorch_pretrained_bert.tokenization import BertTokenizer
 from pytorch_pretrained_bert.modeling import BertForSequenceClassification, BertConfig, WEIGHTS_NAME, CONFIG_NAME
-from pytorch_pretrained_bert.optimization import BertAdam, warmup_linear
+from pytorch_pretrained_bert.optimization import BertAdam
 
 from Utils.utils import get_device
 from Utils.Classifier_utils import load_data
@@ -63,6 +63,9 @@ def main(config, myProcessor):
             config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
 
         model.to(device)
+
+        if n_gpu > 1:
+            torch.nn.DataParallel(model)
 
         """ 优化器准备 """
         param_optimizer = list(model.named_parameters())
