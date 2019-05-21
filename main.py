@@ -1,3 +1,4 @@
+# coding=utf-8
 import random
 import numpy as np
 import time
@@ -9,7 +10,7 @@ import torch.nn as nn
 
 
 from pytorch_pretrained_bert.tokenization import BertTokenizer
-from pytorch_pretrained_bert.modeling import BertForSequenceClassification, BertConfig, WEIGHTS_NAME, CONFIG_NAME
+from pytorch_pretrained_bert.modeling import BertConfig, WEIGHTS_NAME, CONFIG_NAME
 from pytorch_pretrained_bert.optimization import BertAdam
 
 from Utils.utils import get_device
@@ -30,6 +31,7 @@ def main(config, myProcessor):
     output_config_file = os.path.join(config.output_dir, CONFIG_NAME)
 
     device, n_gpu = get_device()  # 设备准备
+    n_gpu = 1
 
     config.train_batch_size = config.train_batch_size // config.gradient_accumulation_steps
 
@@ -37,6 +39,7 @@ def main(config, myProcessor):
     random.seed(config.seed)
     np.random.seed(config.seed)
     torch.manual_seed(config.seed)
+
     if n_gpu > 0:
         torch.cuda.manual_seed_all(config.seed)
 
@@ -48,6 +51,7 @@ def main(config, myProcessor):
     label_list = processor.get_labels()
     num_labels = len(label_list)
 
+
     if config.do_train:
 
         train_dataloader, train_examples_len = load_data(
@@ -57,15 +61,24 @@ def main(config, myProcessor):
 
         num_train_optimization_steps = int(
             train_examples_len / config.train_batch_size / config.gradient_accumulation_steps) * config.num_train_epochs
-
+        
         """ 模型准备 """
-        model = BertForSequenceClassification.from_pretrained(
-            config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
+        print("model name is {}".format(config.model_name))
+        if config.model_name == "BertOrigin":
+            from BertOrigin.BertOrigin import BertOrigin
+            model = BertOrigin.from_pretrained(
+                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
+        elif config.model_name == "BertCNN":
+            from BertCNN.BertCNN import BertCNN
+            filter_sizes = [int(val) for val in config.filter_sizes.split()]
+            model = BertCNN.from_pretrained(
+                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels, 
+                n_filters=config.filter_num, filter_sizes=filter_sizes)
 
         model.to(device)
 
         if n_gpu > 1:
-            torch.nn.DataParallel(model)
+            model = torch.nn.DataParallel(model)
 
         """ 优化器准备 """
         param_optimizer = list(model.named_parameters())
@@ -87,14 +100,21 @@ def main(config, myProcessor):
         criterion = criterion.to(device)
 
         train(config.num_train_epochs, n_gpu, model, train_dataloader, dev_dataloader, optimizer,
-              criterion, config.gradient_accumulation_steps, device, label_list, output_model_file, output_config_file, config.log_dir, config.print_step)
+              criterion, config.gradient_accumulation_steps, device, label_list, output_model_file, output_config_file, config.log_dir, config.print_step, config.early_stop)
 
     """ Test """
     test_dataloader, _ = load_data(
         config.data_dir, tokenizer, processor, config.max_seq_length, config.test_batch_size, "test")
 
     bert_config = BertConfig(output_config_file)
-    model = BertForSequenceClassification(bert_config, num_labels=num_labels)
+    if config.model_name == "BertOrigin":
+        from BertOrigin.BertOrigin import BertOrigin
+        model = BertOrigin(bert_config, num_labels=num_labels)
+    elif config.model_name == "BertCNN":
+        from BertCNN.BertCNN import BertCNN
+        filter_sizes = [int(val) for val in config.filter_sizes.split()]
+        model = BertCNN(bert_config, num_labels=num_labels,
+                        n_filters=config.filter_num, filter_sizes=filter_sizes)
     model.load_state_dict(torch.load(output_model_file))
     model.to(device)
 
@@ -108,9 +128,9 @@ def main(config, myProcessor):
     print("-------------- Test -------------")
     print(f'\t  Loss: {test_loss: .3f} | Acc: {test_acc*100: .3f} %')
 
-    for label in label_list:
-        print('\t {}: Precision: {} | recall: {} | f1 score: {}'.format(
-            label, test_report[label]['precision'], test_report[label]['recall'], test_report[label]['f1-score']))
+    # for label in label_list:
+    #     print('\t {}: Precision: {} | recall: {} | f1 score: {}'.format(
+    #         label, test_report[label]['precision'], test_report[label]['recall'], test_report[label]['f1-score']))
     print_list = ['micro avg', 'macro avg', 'weighted avg']
 
     for label in print_list:

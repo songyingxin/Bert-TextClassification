@@ -1,3 +1,4 @@
+# coding=utf-8
 
 import numpy as np
 from tqdm import tqdm
@@ -8,9 +9,13 @@ import time
 from .utils import classifiction_metric
 
 
-def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, criterion, gradient_accumulation_steps, device, label_list, output_model_file, output_config_file, log_dir, print_step):
+def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, 
+optimizer, criterion, gradient_accumulation_steps, device, label_list, 
+output_model_file, output_config_file, log_dir, print_step, early_stop):
 
     model.train()
+
+    early_stop_times = 0
 
     writer = SummaryWriter(
         log_dir= log_dir + '/' + time.strftime('%H:%M:%S', time.gmtime()))
@@ -19,6 +24,10 @@ def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, 
 
     global_step = 0
     for epoch in range(int(epoch_num)):
+
+        if early_stop_times >= early_stop:
+            break
+
         print(f'---------------- Epoch: {epoch+1:02} ----------')
 
         epoch_loss = 0
@@ -93,6 +102,11 @@ def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, optimizer, 
                     torch.save(model_to_save.state_dict(), output_model_file)
                     with open(output_config_file, 'w') as f:
                         f.write(model_to_save.config.to_json_string())
+
+                    early_stop_times = 0
+                else:
+                    early_stop_times += 1
+
     writer.close()
                     
 

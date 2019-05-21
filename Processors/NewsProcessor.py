@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import os
 
 from .DataProcessor import DataProcessor
@@ -25,7 +27,7 @@ class NewsProcessor(DataProcessor):
 
     def get_labels(self):
         """See base class."""
-        return ['房产', '科技', '财经', '游戏', '娱乐', '时尚', '时政', '家居', '教育', '体育']
+        return [u'房产', u'科技', u'财经', u'游戏', u'娱乐', u'时尚', u'时政', u'家居', u'教育', u'体育']
 
     def _create_examples(self, lines, set_type):
         """Creates examples for the training and dev sets."""

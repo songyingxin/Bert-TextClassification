@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import torch
 from torch.utils.data import (DataLoader, RandomSampler, TensorDataset)
 
