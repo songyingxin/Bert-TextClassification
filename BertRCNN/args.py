@@ -7,7 +7,7 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
 
     parser = argparse.ArgumentParser(description='BERT Baseline')
 
-    parser.add_argument("--model_name", default="BertCNN",
+    parser.add_argument("--model_name", default="BertRCNN",
                         type=str, help="the name of model ")
 
     # 文件路径：数据目录， 缓存目录
@@ -17,17 +17,17 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
                         help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
 
     parser.add_argument("--output_dir",
-                        default=output_dir + "BertCNN/",
+                        default=output_dir + "BertRCNN/",
                         type=str,
                         help="The output directory where the model predictions and checkpoints will be written.")
 
     parser.add_argument("--cache_dir",
-                        default=cache_dir + "BertCNN/",
+                        default=cache_dir + "BertRCNN/",
                         type=str,
                         help="缓存目录，主要用于模型缓存")
 
     parser.add_argument("--log_dir",
-                        default=log_dir + "BertCNN/",
+                        default=log_dir + "BertRCNN/",
                         type=str,
                         help="日志目录，主要用于 tensorboard 分析")
 
@@ -98,18 +98,12 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
 
     parser.add_argument('--print_step',
                         type=int,
-                        default=200,
+                        default=50,
                         help="多少步进行模型保存以及日志信息写入")
-
-    #CNN 参数
-    parser.add_argument("--filter_num", default=200,
-                        type=int, help="filter 的数量")
-    parser.add_argument("--filter_sizes", default="1 2 3 4 5 6 7 8 9 10 11",
-                        type=str, help="filter 的 size")
 
     parser.add_argument("--early_stop", type=int, default=200,
                         help="提前终止，多少次dev loss 连续增大，就不再训练")
-    
+                        
     parser.add_argument("--gpu_ids", type=str, default="0", help="gpu 的设备id")
     config = parser.parse_args()
 

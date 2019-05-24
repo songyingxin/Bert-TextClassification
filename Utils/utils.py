@@ -6,8 +6,8 @@ from sklearn import metrics
 import torch
 
 
-def get_device():
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+def get_device(gpu_id):
+    device = torch.device("cuda:" + str(gpu_id) if torch.cuda.is_available() else "cpu")
     n_gpu = torch.cuda.device_count()
     if torch.cuda.is_available():
         print("device is cuda, # cuda is: ", n_gpu)
@@ -32,7 +32,8 @@ def classifiction_metric(preds, labels, label_list):
 
     report = metrics.classification_report(labels, preds, labels=labels_list, target_names=label_list, digits=5, output_dict=True)
 
-    return acc, report
+    auc = metrics.roc_auc_score(labels, preds)
+    return acc, report, auc
 
 
 

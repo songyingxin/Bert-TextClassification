@@ -16,7 +16,10 @@
 
 其中，  [THUCNews](http://thuctc.thunlp.org/)  只选取了一个子集， 该子集中包括了10个分类，每个分类6500条数据。
 
-数据集我会在后续上传， 不建议自己去下载并做处理，这是因为我自己对数据进行了分析与简单预处理， 我觉得花时间在数据预处理上是不划算的，建议你专注于模型部分。
+```
+sst-2: 链接：https://pan.baidu.com/s/1ax9uCjdpOHDxhUhpdB0d_g  提取码：rxbi 
+cnews: 链接：https://pan.baidu.com/s/19sOrAxSKn3jCIvbVoD_-ag  提取码：rstb 
+```
 
 ## 关于 Bert 
 
@@ -55,11 +58,13 @@ python run_SST2.py --max_seq_length=65 --num_train_epochs=5.0 --do_train  # trai
 python run_SST2.py --max_seq_length=65   # test
 ```
 
-| model_name | Acc     | F1      | Loss  |
-| ---------- | ------- | ------- | ----- |
-| BertOrigin | 94.656% | 95.217% | 0.306 |
-|            |         |         |       |
-
+| 模型          | loss  | acc    | f1     |
+| ------------- | ----- | ------ | ------ |
+| BertOrigin    | 0.171 | 93.568 | 93.58  |
+| BertCNN (5,6) | 0.148 | 94.607 | 94.62  |
+| BertATT       | 0.170 | 93.914 | 93.926 |
+| BertRCNN      | 0.191 | 93.815 |        |
+|               |       |        |        |
 
 ### Yelp
 

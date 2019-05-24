@@ -17,12 +17,12 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
                         help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
     
     parser.add_argument("--output_dir",
-                        default=output_dir,
+                        default=output_dir + "BertOrigin/",
                         type=str,
                         help="The output directory where the model predictions and checkpoints will be written.")
 
     parser.add_argument("--cache_dir", 
-                        default=cache_dir, 
+                        default=cache_dir + "BertOrigin/",
                         type=str,
                         help="缓存目录，主要用于模型缓存")
     
@@ -100,11 +100,13 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
 
     parser.add_argument('--print_step',
                         type=int,
-                        default=200,
+                        default=50,
                         help="多少步进行模型保存以及日志信息写入")
      
-    parser.add_argument("--early_stop", type=int, default=10, help="提前终止，多少次dev loss 连续增大，就不再训练")
+    parser.add_argument("--early_stop", type=int, default=200, help="提前终止，多少次dev loss 连续增大，就不再训练")
 
+
+    parser.add_argument("--gpu_ids", type=str, default="0", help="gpu 的设备id")
     config = parser.parse_args()
 
     return config

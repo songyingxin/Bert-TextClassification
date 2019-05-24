@@ -5,7 +5,8 @@ import os
 from .DataProcessor import DataProcessor
 from Utils.Classifier_utils import InputExample, convert_examples_to_features, convert_features_to_tensors
 
-class Sst2Processor(DataProcessor):
+
+class DemoProcessor(DataProcessor):
     """Processor for the SST-2 data set (GLUE version)."""
 
     def get_train_examples(self, data_dir):
@@ -38,5 +39,3 @@ class Sst2Processor(DataProcessor):
             examples.append(
                 InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
         return examples
-
-

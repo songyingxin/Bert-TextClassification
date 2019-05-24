@@ -19,19 +19,23 @@ from Utils.Classifier_utils import load_data
 from Utils.train_evalute import train, evaluate
 
 
-def main(config, myProcessor):
+def main(config, model_times, myProcessor):
 
-    if not os.path.exists(config.output_dir):
-        os.makedirs(config.output_dir)
+    if not os.path.exists(config.output_dir + model_times):
+        os.makedirs(config.output_dir + model_times)
 
-    if not os.path.exists(config.cache_dir):
-        os.makedirs(config.cache_dir)
+    if not os.path.exists(config.cache_dir + model_times):
+        os.makedirs(config.cache_dir + model_times)
 
-    output_model_file = os.path.join(config.output_dir, WEIGHTS_NAME)  # 模型输出文件
-    output_config_file = os.path.join(config.output_dir, CONFIG_NAME)
+    output_model_file = os.path.join(config.output_dir, model_times, WEIGHTS_NAME)  # 模型输出文件
+    output_config_file = os.path.join(config.output_dir, model_times,CONFIG_NAME)
 
-    device, n_gpu = get_device()  # 设备准备
-    n_gpu = 1
+    gpu_ids = [int(device_id) for device_id in config.gpu_ids.split()]
+
+    device, n_gpu = get_device(gpu_ids[0])  # 设备准备
+
+    if n_gpu > 1:
+        n_gpu = len(gpu_ids)
 
     config.train_batch_size = config.train_batch_size // config.gradient_accumulation_steps
 
@@ -74,11 +78,20 @@ def main(config, myProcessor):
             model = BertCNN.from_pretrained(
                 config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels, 
                 n_filters=config.filter_num, filter_sizes=filter_sizes)
+        elif config.model_name == "BertATT":
+            from BertATT.BertATT import BertATT
+            model = BertATT.from_pretrained(
+                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
+        
+        elif config.model_name == "BertRCNN":
+            from BertRCNN.BertRCNN import BertRCNN
+            model = BertRCNN.from_pretrained(
+                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
 
         model.to(device)
 
         if n_gpu > 1:
-            model = torch.nn.DataParallel(model)
+            model = torch.nn.DataParallel(model,device_ids=gpu_ids)
 
         """ 优化器准备 """
         param_optimizer = list(model.named_parameters())
@@ -115,6 +128,15 @@ def main(config, myProcessor):
         filter_sizes = [int(val) for val in config.filter_sizes.split()]
         model = BertCNN(bert_config, num_labels=num_labels,
                         n_filters=config.filter_num, filter_sizes=filter_sizes)
+    elif config.model_name == "BertATT":
+        from BertATT.BertATT import BertATT
+        model = BertATT.from_pretrained(
+            config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
+    elif config.model_name == "BertRCNN":
+            from BertRCNN.BertRCNN import BertRCNN
+            model = BertRCNN.from_pretrained(
+                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
+
     model.load_state_dict(torch.load(output_model_file))
     model.to(device)
 
@@ -123,15 +145,15 @@ def main(config, myProcessor):
     criterion = criterion.to(device)
 
     # test the model
-    test_loss, test_acc, test_report = evaluate(
+    test_loss, test_acc, test_report, test_auc = evaluate(
         model, test_dataloader, criterion, device, label_list)
     print("-------------- Test -------------")
-    print(f'\t  Loss: {test_loss: .3f} | Acc: {test_acc*100: .3f} %')
+    print(f'\t  Loss: {test_loss: .3f} | Acc: {test_acc*100: .3f} % | AUC:{test_auc}')
 
-    # for label in label_list:
-    #     print('\t {}: Precision: {} | recall: {} | f1 score: {}'.format(
-    #         label, test_report[label]['precision'], test_report[label]['recall'], test_report[label]['f1-score']))
-    print_list = ['micro avg', 'macro avg', 'weighted avg']
+    for label in label_list:
+        print('\t {}: Precision: {} | recall: {} | f1 score: {}'.format(
+            label, test_report[label]['precision'], test_report[label]['recall'], test_report[label]['f1-score']))
+    print_list = ['macro avg', 'weighted avg']
 
     for label in print_list:
         print('\t {}: Precision: {} | recall: {} | f1 score: {}'.format(
