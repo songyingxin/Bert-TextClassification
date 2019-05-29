@@ -5,7 +5,7 @@ from torch.utils.data import (DataLoader, RandomSampler, TensorDataset)
 
 
 class InputExample(object):
-    """A single training/test example for simple sequence classification."""
+    """单句子分类的 Example 类"""
 
     def __init__(self, guid, text_a, text_b=None, label=None):
         """Constructs a InputExample.
@@ -37,7 +37,15 @@ class InputFeatures(object):
 
 def convert_examples_to_features(examples, label_list, max_seq_length,
                                  tokenizer):
-    """Loads a data file into a list of `InputBatch`s."""
+    """Loads a data file into a list of `InputBatch`s.
+    Args:
+        examples: InputExample, 表示样本集
+        label_list: 标签列表
+        max_seq_length: 句子最大长度
+        tokenizer： 分词器
+    Returns:
+        features: InputFeatures, 表示样本转化后信息 
+    """
 
     label_map = {label: i for i, label in enumerate(label_list)}
 
@@ -46,53 +54,36 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
         if ex_index % 10000 == 0:
             print("Writing example {} of {}".format(ex_index, len(examples)))
 
-        tokens_a = tokenizer.tokenize(example.text_a)
+        tokens_a = tokenizer.tokenize(example.text_a)  # 分词
 
         tokens_b = None
         if example.text_b:
-            tokens_b = tokenizer.tokenize(example.text_b)
-            # Modifies `tokens_a` and `tokens_b` in place so that the total
-            # length is less than the specified length.
-            # Account for [CLS], [SEP], [SEP] with "- 3"
+            tokens_b = tokenizer.tokenize(example.text_b) # 分词
+            # “-3” 是因为句子中有[CLS], [SEP], [SEP] 三个标识，可参见论文
+            # [CLS] is this jack ##son ##ville ? [SEP] no it is not . [SEP]
             _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
         else:
-            # Account for [CLS] and [SEP] with "- 2"
+            # "- 2" 是因为句子中有[CLS], [SEP] 两个标识，可参见论文
+            # [CLS] the dog is hairy . [SEP]
             if len(tokens_a) > max_seq_length - 2:
                 tokens_a = tokens_a[:(max_seq_length - 2)]
 
-        # The convention in BERT is:
-        # (a) For sequence pairs:
-        #  tokens:   [CLS] is this jack ##son ##ville ? [SEP] no it is not . [SEP]
-        #  type_ids: 0   0  0    0    0     0       0 0    1  1  1  1   1 1
-        # (b) For single sequences:
-        #  tokens:   [CLS] the dog is hairy . [SEP]
-        #  type_ids: 0   0   0   0  0     0 0
-        #
-        # Where "type_ids" are used to indicate whether this is the first
-        # sequence or the second sequence. The embedding vectors for `type=0` and
-        # `type=1` were learned during pre-training and are added to the wordpiece
-        # embedding vector (and position vector). This is not *strictly* necessary
-        # since the [SEP] token unambigiously separates the sequences, but it makes
-        # it easier for the model to learn the concept of sequences.
-        #
-        # For classification tasks, the first vector (corresponding to [CLS]) is
-        # used as as the "sentence vector". Note that this only makes sense because
-        # the entire model is fine-tuned.
+        # [CLS] 可以视作是保存句子全局向量信息
+        # [SEP] 用于区分句子，使得模型能够更好的把握句子信息
+
         tokens = ["[CLS]"] + tokens_a + ["[SEP]"]
-        segment_ids = [0] * len(tokens)
+        segment_ids = [0] * len(tokens)  # 句子标识，0表示是第一个句子，1表示是第二个句子，参见论文
 
         if tokens_b:
             tokens += tokens_b + ["[SEP]"]
             segment_ids += [1] * (len(tokens_b) + 1)
 
-        input_ids = tokenizer.convert_tokens_to_ids(tokens)
+        input_ids = tokenizer.convert_tokens_to_ids(tokens) # 将词转化为对应词表中的id
 
-        # The mask has 1 for real tokens and 0 for padding tokens. Only real
-        # tokens are attended to.
+        # input_mask: 1 表示真正的真正的 tokens， 0 表示是 padding tokens
         input_mask = [1] * len(input_ids)
-
-        # Zero-pad up to the sequence length.
         padding = [0] * (max_seq_length - len(input_ids))
+
         input_ids += padding
         input_mask += padding
         segment_ids += padding
@@ -112,12 +103,8 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
 
 
 def _truncate_seq_pair(tokens_a, tokens_b, max_length):
-    """Truncates a sequence pair in place to the maximum length."""
+    """ 截断句子a和句子b，使得二者之和不超过 max_length """
 
-    # This is a simple heuristic which will always truncate the longer sequence
-    # one token at a time. This makes more sense than truncating an equal percent
-    # of tokens from each, since if one sequence is very short then each token
-    # that's truncated likely contains more information than a longer sequence.
     while True:
         total_length = len(tokens_a) + len(tokens_b)
         if total_length <= max_length:
@@ -129,6 +116,13 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
 
 
 def convert_features_to_tensors(features, batch_size):
+    """ 将 features 转化为 tensor，并塞入迭代器
+    Args:
+        features: InputFeatures, 样本 features 信息
+        batch_size: batch 大小
+    Returns:
+        dataloader: 以 batch_size 为基础的迭代器
+    """
     all_input_ids = torch.tensor(
         [f.input_ids for f in features], dtype=torch.long)
     all_input_mask = torch.tensor(
@@ -147,6 +141,19 @@ def convert_features_to_tensors(features, batch_size):
 
 
 def load_data(data_dir, tokenizer, processor, max_length, batch_size, data_type):
+    """ 导入数据， 并返回对应的迭代器
+    Args: 
+        data_dir: 原始数据目录
+        tokenizer： 分词器
+        processor: 定义的 processor
+        max_length: 句子最大长度
+        batch_size: batch 大小
+        data_type: "train" or "dev", "test" ， 表示加载哪个数据
+    
+    Returns:
+        dataloader: 数据迭代器
+        examples_len: 样本大小
+    """
 
     label_list = processor.get_labels()
 
@@ -164,4 +171,6 @@ def load_data(data_dir, tokenizer, processor, max_length, batch_size, data_type)
     
     dataloader = convert_features_to_tensors(features, batch_size)
 
-    return dataloader, len(examples)
+    examples_len = len(examples)
+
+    return dataloader, examples_len

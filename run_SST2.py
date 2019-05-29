@@ -4,7 +4,7 @@ from main import main
 
 if __name__ == "__main__":
 
-    model_name = "BertRCNN"
+    model_name = "BertOrigin"
     data_dir = "/search/hadoop02/suanfa/songyingxin/data/SST-2"
     output_dir = ".sst_output/" 
     cache_dir = ".sst_cache"
@@ -12,11 +12,14 @@ if __name__ == "__main__":
 
     model_times = "model_1/"   # 第几次保存的模型，主要是用来获取最佳结果
 
-    # bert-base
-    bert_vocab_file = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-base-uncased-vocab.txt"
-    bert_model_dir = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-base-uncased"
-    
+    # # bert-base
+    # bert_vocab_file = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-base-uncased-vocab.txt"
+    # bert_model_dir = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-base-uncased"
 
+    # bert-large
+    bert_vocab_file = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-large-uncased-vocab.txt"
+    bert_model_dir = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-large-uncased"
+    
     from Processors.SST2Processor import Sst2Processor
 
     if model_name == "BertOrigin":
