@@ -5,6 +5,7 @@ from main import main
 
 if __name__ == "__main__":
 
+    """ 业务数据集， 不用理会 """
     model_name = "BertRCNN"
     data_dir = "/search/hadoop02/suanfa/songyingxin/Github/chiqianqian"
     output_dir = ".demo_output/"

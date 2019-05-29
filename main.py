@@ -27,35 +27,33 @@ def main(config, model_times, myProcessor):
     if not os.path.exists(config.cache_dir + model_times):
         os.makedirs(config.cache_dir + model_times)
 
-    output_model_file = os.path.join(config.output_dir, model_times, WEIGHTS_NAME)  # 模型输出文件
+    # Bert 模型输出文件
+    output_model_file = os.path.join(config.output_dir, model_times, WEIGHTS_NAME)  
     output_config_file = os.path.join(config.output_dir, model_times,CONFIG_NAME)
 
+    # 设备准备
     gpu_ids = [int(device_id) for device_id in config.gpu_ids.split()]
-
-    device, n_gpu = get_device(gpu_ids[0])  # 设备准备
-
+    device, n_gpu = get_device(gpu_ids[0])  
     if n_gpu > 1:
         n_gpu = len(gpu_ids)
 
     config.train_batch_size = config.train_batch_size // config.gradient_accumulation_steps
 
-    """ 设定随机种子 """
+    # 设定随机种子 
     random.seed(config.seed)
     np.random.seed(config.seed)
     torch.manual_seed(config.seed)
-
     if n_gpu > 0:
         torch.cuda.manual_seed_all(config.seed)
 
-    """ 数据准备 """
+    # 数据准备
     processor = myProcessor()  # 整个文件的代码只需要改此处即可
     tokenizer = BertTokenizer.from_pretrained(
         config.bert_vocab_file, do_lower_case=config.do_lower_case)  # 分词器选择
-
     label_list = processor.get_labels()
     num_labels = len(label_list)
 
-
+    # Train and dev
     if config.do_train:
 
         train_dataloader, train_examples_len = load_data(
@@ -66,7 +64,7 @@ def main(config, model_times, myProcessor):
         num_train_optimization_steps = int(
             train_examples_len / config.train_batch_size / config.gradient_accumulation_steps) * config.num_train_epochs
         
-        """ 模型准备 """
+        # 模型准备
         print("model name is {}".format(config.model_name))
         if config.model_name == "BertOrigin":
             from BertOrigin.BertOrigin import BertOrigin
@@ -123,10 +121,14 @@ def main(config, model_times, myProcessor):
               criterion, config.gradient_accumulation_steps, device, label_list, output_model_file, output_config_file, config.log_dir, config.print_step, config.early_stop)
 
     """ Test """
+
+    # test 数据
     test_dataloader, _ = load_data(
         config.data_dir, tokenizer, processor, config.max_seq_length, config.test_batch_size, "test")
 
+    # 加载模型 
     bert_config = BertConfig(output_config_file)
+
     if config.model_name == "BertOrigin":
         from BertOrigin.BertOrigin import BertOrigin
         model = BertOrigin(bert_config, num_labels=num_labels)
@@ -141,7 +143,6 @@ def main(config, model_times, myProcessor):
     elif config.model_name == "BertRCNN":
         from BertRCNN.BertRCNN import BertRCNN
         model = BertRCNN(bert_config, num_labels=num_labels)
-
     elif config.model_name == "BertCNNPlus":
         from BertCNNPlus.BertCNNPlus import BertCNNPlus
         filter_sizes = [int(val) for val in config.filter_sizes.split()]
@@ -151,7 +152,7 @@ def main(config, model_times, myProcessor):
     model.load_state_dict(torch.load(output_model_file))
     model.to(device)
 
-    """ 损失函数准备 """
+    # 损失函数准备
     criterion = nn.CrossEntropyLoss()
     criterion = criterion.to(device)
 

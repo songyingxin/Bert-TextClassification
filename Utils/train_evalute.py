@@ -12,6 +12,23 @@ from .utils import classifiction_metric
 def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, 
 optimizer, criterion, gradient_accumulation_steps, device, label_list, 
 output_model_file, output_config_file, log_dir, print_step, early_stop):
+    """ 模型训练过程
+    Args: 
+        epoch_num: epoch 数量
+        n_gpu: 使用的 gpu 数量
+        train_dataloader: 训练数据的Dataloader
+        dev_dataloader: 测试数据的 Dataloader
+        optimizer: 优化器
+        criterion： 损失函数定义
+        gradient_accumulation_steps: 梯度积累
+        device: 设备，cuda， cpu
+        label_list: 分类的标签数组
+        output_model_file: 用于保存 Bert 模型
+        output_config_file: 用于 Bert 配置文件
+        log_dir: tensorboard 读取的日志目录，用于后续分析
+        print_step: 多少步保存一次模型，日志等信息
+        early_stop: 提前终止
+    """
 
     model.train()
 
@@ -51,10 +68,10 @@ output_model_file, output_config_file, log_dir, print_step, early_stop):
                 loss = loss / gradient_accumulation_steps
             
             train_steps += 1
-            # 反向传播
+
             loss.backward()
 
-            """ 用于画图和分析的数据 """
+            # 用于画图和分析的数据
             epoch_loss += loss.item()
             preds = logits.detach().cpu().numpy()
             outputs = np.argmax(preds, axis=1)

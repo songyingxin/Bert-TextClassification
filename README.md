@@ -44,27 +44,33 @@ cnews: 链接：https://pan.baidu.com/s/19sOrAxSKn3jCIvbVoD_-ag  提取码：rst
 **注意：**  THUCNews 数据集中的样本长度十分的长，上面说到 Bert 本身对于序列长度十分敏感，因此我在我单1080ti下所能支持的最大长度。这也导致运行时间的线性增加，1个epoch 大概需要1个半小时到2个小时之间
 
 ```
-python run_CNews.py --max_seq_length=500 --num_train_epochs=5.0 --do_train --gradient_accumulation_steps=8
+python3 run_CNews.py --max_seq_length=512 --num_train_epochs=5.0 --do_train --gpu_ids="4 5 6 7" --gradient_accumulation_steps=8 --print_step=500  # gpu_ids 选择 gpu， 如果是单gpu， 选择 max_seq_length 为150较为合适(1080ti)
+python3 run_CNews.py --max_seq_length=512
 ```
 
-model_name | ACC | F1 | Loss 
+model_name | loss | acc | f1 
 --- |--- | --- | --- 
-BertOrigin | 97.740% | 97.73% | 0.114
+BertOrigin | 0.088 | 97.40 | 97.39 
+ |       |  |  
+ |       |  |  
+ |       |  |  
+ |       |  |  
+ |       |  |  
 
 ### SST-2
 
 ```
 python3 run_SST2.py --max_seq_length=65 --num_train_epochs=5.0 --do_train --gpu_ids="1" --gradient_accumulation_steps=8 --print_step=100  # train and test
-python run_SST2.py --max_seq_length=65   # test
+python3 run_SST2.py --max_seq_length=65   # test
 ```
 
-| 模型          | loss  | acc    | f1     |
-| ------------- | ----- | ------ | ------ |
-| BertOrigin    | 0.170 | 94.458 | 94.458 |
-| BertCNN (5,6) | 0.148 | 94.607 | 94.62  |
-| BertATT       | 0.170 | 93.914 | 93.926 |
-| BertRCNN      | 0.164 | 93.26  | 94.16  |
-| BertCNNPlus   |       |        |        |
+| 模型                 | loss  | acc    | f1     |
+| -------------------- | ----- | ------ | ------ |
+| BertOrigin(base)     | 0.170 | 94.458 | 94.458 |
+| BertCNN (5,6) (base) | 0.148 | 94.607 | 94.62  |
+| BertATT (base)       | 0.162 | 94.211 | 94.22  |
+| BertRCNN (base)      | 0.164 | 93.26  | 94.16  |
+| BertCNNPlus (base)   |       |        |        |
 
 ### Yelp
 
