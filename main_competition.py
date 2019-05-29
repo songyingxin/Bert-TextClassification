@@ -19,6 +19,35 @@ from Utils.Classifier_utils import load_data
 from Utils.train_evalute import train, evaluate
 
 
+def eval_save(model, test_dataloader, criterion, device, label_list):
+    model.eval()
+
+    all_preds = np.array([], dtype=int)
+
+    epoch_loss = 0
+
+    for input_ids, input_mask, segment_ids, label_ids in tqdm(dataloader, desc="Eval"):
+        input_ids = input_ids.to(device)
+        input_mask = input_mask.to(device)
+        segment_ids = segment_ids.to(device)
+        label_ids = label_ids.to(device)
+
+        with torch.no_grad():
+            logits = model(input_ids, segment_ids, input_mask, labels=None)
+
+        preds = logits.detach().cpu().numpy()
+        outputs = np.argmax(preds, axis=1)
+        all_preds = np.append(all_preds, outputs)
+
+    start = 7000000
+    with open("preds.csv", 'w', encoding='utf-8') as f:
+        out_writer = csv.writer(f, delimiter=',')
+        out_writer.writerow(['id', 'prediction'])
+
+        for i in range(len(all_preds)):
+            out_writer.writerow([start + i, all_preds[i]])
+
+
 def main(config, model_times, myProcessor):
 
     if not os.path.exists(config.output_dir + model_times):
@@ -27,8 +56,10 @@ def main(config, model_times, myProcessor):
     if not os.path.exists(config.cache_dir + model_times):
         os.makedirs(config.cache_dir + model_times)
 
-    output_model_file = os.path.join(config.output_dir, model_times, WEIGHTS_NAME)  # 模型输出文件
-    output_config_file = os.path.join(config.output_dir, model_times,CONFIG_NAME)
+    output_model_file = os.path.join(
+        config.output_dir, model_times, WEIGHTS_NAME)  # 模型输出文件
+    output_config_file = os.path.join(
+        config.output_dir, model_times, CONFIG_NAME)
 
     gpu_ids = [int(device_id) for device_id in config.gpu_ids.split()]
 
@@ -55,7 +86,6 @@ def main(config, model_times, myProcessor):
     label_list = processor.get_labels()
     num_labels = len(label_list)
 
-
     if config.do_train:
 
         train_dataloader, train_examples_len = load_data(
@@ -65,7 +95,7 @@ def main(config, model_times, myProcessor):
 
         num_train_optimization_steps = int(
             train_examples_len / config.train_batch_size / config.gradient_accumulation_steps) * config.num_train_epochs
-        
+
         """ 模型准备 """
         print("model name is {}".format(config.model_name))
         if config.model_name == "BertOrigin":
@@ -76,13 +106,13 @@ def main(config, model_times, myProcessor):
             from BertCNN.BertCNN import BertCNN
             filter_sizes = [int(val) for val in config.filter_sizes.split()]
             model = BertCNN.from_pretrained(
-                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels, 
+                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels,
                 n_filters=config.filter_num, filter_sizes=filter_sizes)
         elif config.model_name == "BertATT":
             from BertATT.BertATT import BertATT
             model = BertATT.from_pretrained(
                 config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
-        
+
         elif config.model_name == "BertRCNN":
             from BertRCNN.BertRCNN import BertRCNN
             model = BertRCNN.from_pretrained(
@@ -98,7 +128,7 @@ def main(config, model_times, myProcessor):
         model.to(device)
 
         if n_gpu > 1:
-            model = torch.nn.DataParallel(model,device_ids=gpu_ids)
+            model = torch.nn.DataParallel(model, device_ids=gpu_ids)
 
         """ 优化器准备 """
         param_optimizer = list(model.named_parameters())
@@ -156,16 +186,6 @@ def main(config, model_times, myProcessor):
     criterion = criterion.to(device)
 
     # test the model
-    test_loss, test_acc, test_report, test_auc = evaluate(
-        model, test_dataloader, criterion, device, label_list)
-    print("-------------- Test -------------")
-    print(f'\t  Loss: {test_loss: .3f} | Acc: {test_acc*100: .3f} % | AUC:{test_auc}')
+    eval_save(model, test_dataloader, criterion, device, label_list)
+    
 
-    for label in label_list:
-        print('\t {}: Precision: {} | recall: {} | f1 score: {}'.format(
-            label, test_report[label]['precision'], test_report[label]['recall'], test_report[label]['f1-score']))
-    print_list = ['macro avg', 'weighted avg']
-
-    for label in print_list:
-        print('\t {}: Precision: {} | recall: {} | f1 score: {}'.format(
-            label, test_report[label]['precision'], test_report[label]['recall'], test_report[label]['f1-score']))

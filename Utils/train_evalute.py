@@ -67,51 +67,51 @@ output_model_file, output_config_file, log_dir, print_step, early_stop):
                 optimizer.zero_grad()
                 global_step += 1
             
-            if global_step % print_step == 0:
+                if global_step % print_step == 0 and global_step != 0:
 
-                """ 打印Train此时的信息 """
-                train_loss = epoch_loss / train_steps
-                train_acc, train_report, train_auc = classifiction_metric(all_preds, all_labels, label_list)
+                    """ 打印Train此时的信息 """
+                    train_loss = epoch_loss / train_steps
+                    train_acc, train_report, train_auc = classifiction_metric(all_preds, all_labels, label_list)
 
-                dev_loss, dev_acc, dev_report, dev_auc = evaluate(model, dev_dataloader, criterion, device, label_list)
+                    dev_loss, dev_acc, dev_report, dev_auc = evaluate(model, dev_dataloader, criterion, device, label_list)
 
-                c = global_step // print_step
-                writer.add_scalar("loss/train", train_loss, c)
-                writer.add_scalar("loss/dev", dev_loss, c)
+                    c = global_step // print_step
+                    writer.add_scalar("loss/train", train_loss, c)
+                    writer.add_scalar("loss/dev", dev_loss, c)
 
-                writer.add_scalar("acc/train", train_acc, c)
-                writer.add_scalar("acc/dev", dev_acc, c)
+                    writer.add_scalar("acc/train", train_acc, c)
+                    writer.add_scalar("acc/dev", dev_acc, c)
 
-                writer.add_scalar("auc/train", train_auc, c)
-                writer.add_scalar("auc/dev", dev_auc, c)
+                    writer.add_scalar("auc/train", train_auc, c)
+                    writer.add_scalar("auc/dev", dev_auc, c)
 
-                for label in label_list:
-                    writer.add_scalar(label + ":" + "f1/train", train_report[label]['f1-score'], c)
-                    writer.add_scalar(label + ":" + "f1/dev",
-                                      dev_report[label]['f1-score'], c)
+                    for label in label_list:
+                        writer.add_scalar(label + ":" + "f1/train", train_report[label]['f1-score'], c)
+                        writer.add_scalar(label + ":" + "f1/dev",
+                                        dev_report[label]['f1-score'], c)
 
-                print_list = ['macro avg', 'weighted avg']
-                for label in print_list:
-                    writer.add_scalar(label + ":" + "f1/train",
-                                      train_report[label]['f1-score'], c)
-                    writer.add_scalar(label + ":" + "f1/dev",
-                                      dev_report[label]['f1-score'], c)
-                
-                if dev_loss < best_dev_loss:
-                    best_dev_loss = dev_loss
+                    print_list = ['macro avg', 'weighted avg']
+                    for label in print_list:
+                        writer.add_scalar(label + ":" + "f1/train",
+                                        train_report[label]['f1-score'], c)
+                        writer.add_scalar(label + ":" + "f1/dev",
+                                        dev_report[label]['f1-score'], c)
+                    
+                    if dev_loss < best_dev_loss:
+                        best_dev_loss = dev_loss
 
-                # if dev_auc > best_auc:
-                #     best_auc = dev_auc
+                    # if dev_auc > best_auc:
+                    #     best_auc = dev_auc
 
-                    model_to_save = model.module if hasattr(
-                        model, 'module') else model
-                    torch.save(model_to_save.state_dict(), output_model_file)
-                    with open(output_config_file, 'w') as f:
-                        f.write(model_to_save.config.to_json_string())
+                        model_to_save = model.module if hasattr(
+                            model, 'module') else model
+                        torch.save(model_to_save.state_dict(), output_model_file)
+                        with open(output_config_file, 'w') as f:
+                            f.write(model_to_save.config.to_json_string())
 
-                    early_stop_times = 0
-                else:
-                    early_stop_times += 1
+                        early_stop_times = 0
+                    else:
+                        early_stop_times += 1
 
     writer.close()
                     

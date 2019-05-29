@@ -54,17 +54,17 @@ BertOrigin | 97.740% | 97.73% | 0.114
 ### SST-2
 
 ```
-python run_SST2.py --max_seq_length=65 --num_train_epochs=5.0 --do_train  # train and test
+python3 run_SST2.py --max_seq_length=65 --num_train_epochs=5.0 --do_train --gpu_ids="1" --gradient_accumulation_steps=8 --print_step=100  # train and test
 python run_SST2.py --max_seq_length=65   # test
 ```
 
 | 模型          | loss  | acc    | f1     |
 | ------------- | ----- | ------ | ------ |
-| BertOrigin    | 0.171 | 93.568 | 93.58  |
+| BertOrigin    | 0.170 | 94.458 | 94.458 |
 | BertCNN (5,6) | 0.148 | 94.607 | 94.62  |
 | BertATT       | 0.170 | 93.914 | 93.926 |
-| BertRCNN      | 0.191 | 93.815 |        |
-|               |       |        |        |
+| BertRCNN      | 0.164 | 93.26  | 94.16  |
+| BertCNNPlus   |       |        |        |
 
 ### Yelp
 

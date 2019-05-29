@@ -31,8 +31,11 @@ def classifiction_metric(preds, labels, label_list):
     labels_list = [i for i in range(len(label_list))]
 
     report = metrics.classification_report(labels, preds, labels=labels_list, target_names=label_list, digits=5, output_dict=True)
-
-    auc = metrics.roc_auc_score(labels, preds)
+    
+    if len(label_list) > 2:
+        auc = 0.5
+    else:
+        auc = metrics.roc_auc_score(labels, preds)
     return acc, report, auc
 
 

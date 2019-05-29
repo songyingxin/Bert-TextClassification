@@ -4,7 +4,7 @@ from main import main
 
 if __name__ == "__main__":
 
-    model_name = "BertOrigin"
+    model_name = "BertCNN"
     data_dir = "/search/hadoop02/suanfa/songyingxin/data/SST-2"
     output_dir = ".sst_output/" 
     cache_dir = ".sst_cache"
@@ -39,5 +39,11 @@ if __name__ == "__main__":
         main(args.get_args(data_dir, output_dir, cache_dir,
                            bert_vocab_file, bert_model_dir, log_dir), 
                            model_times, Sst2Processor)
+    
+    elif model_name == "BertCNNPlus":
+        from BertCNNPlus import args
+        main(args.get_args(data_dir, output_dir, cache_dir,
+                           bert_vocab_file, bert_model_dir, log_dir),
+             model_times, Sst2Processor)
         
 
