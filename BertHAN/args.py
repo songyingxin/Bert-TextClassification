@@ -7,7 +7,7 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
 
     parser = argparse.ArgumentParser(description='BERT Baseline')
 
-    parser.add_argument("--model_name", default="BertRCNN",
+    parser.add_argument("--model_name", default="BertHAN",
                         type=str, help="the name of model ")
 
     # 文件路径：数据目录， 缓存目录
@@ -17,17 +17,17 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
                         help="The input data dir. Should contain the .tsv files (or other data files) for the task.")
 
     parser.add_argument("--output_dir",
-                        default=output_dir + "BertRCNN/",
+                        default=output_dir + "BertHAN/",
                         type=str,
                         help="The output directory where the model predictions and checkpoints will be written.")
 
     parser.add_argument("--cache_dir",
-                        default=cache_dir + "BertRCNN/",
+                        default=cache_dir + "BertHAN/",
                         type=str,
                         help="缓存目录，主要用于模型缓存")
 
     parser.add_argument("--log_dir",
-                        default=log_dir + "BertRCNN/",
+                        default=log_dir + "BertHAN/",
                         type=str,
                         help="日志目录，主要用于 tensorboard 分析")
 
@@ -50,11 +50,13 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
                         help="Set this flag if you are using an uncased model.")
 
     parser.add_argument("--max_seq_length",
-                        default=512,
+                        default=250,
                         type=int,
                         help="The maximum total input sequence length after WordPiece tokenization. \n"
                              "Sequences longer than this will be truncated, and sequences shorter \n"
                              "than this will be padded.")
+
+    parser.add_argument("--max_sentence_num", default=100, type=int, help="文章最多选取多少句子")
 
     # 训练参数
     parser.add_argument("--train_batch_size",
@@ -103,13 +105,7 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
 
     parser.add_argument("--early_stop", type=int, default=50,
                         help="提前终止，多少次dev loss 连续增大，就不再训练")
-     
-    # TextRNN 参数
-    parser.add_argument("--hidden_size", default=300, type=int, help="隐层特征维度")
-    parser.add_argument('--num_layers', default=2, type=int, help='RNN层数')
-    parser.add_argument("--bidirectional", default=True, type=bool)
-    
-    parser.add_argument("--dropout", default=0.2, type=float)
+
     parser.add_argument("--gpu_ids", type=str, default="0", help="gpu 的设备id")
     config = parser.parse_args()
 

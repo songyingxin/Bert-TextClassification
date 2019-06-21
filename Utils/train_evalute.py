@@ -30,11 +30,13 @@ output_model_file, output_config_file, log_dir, print_step, early_stop):
         early_stop: 提前终止
     """
 
-    model.train()
+    
 
     early_stop_times = 0
 
-    writer = SummaryWriter(log_dir + '/' + time.strftime('%H:%M:%S', time.gmtime()))
+    writer = SummaryWriter(
+        log_dir=log_dir + '/' + time.strftime("%Y-%m-%d-%H:%M:%S", time.localtime(time.time())))
+
 
     best_dev_loss = float('inf')
     best_auc = 0
@@ -55,6 +57,8 @@ output_model_file, output_config_file, log_dir, print_step, early_stop):
         all_labels = np.array([], dtype=int)
 
         for step, batch in enumerate(tqdm(train_dataloader, desc="Iteration")):
+            model.train()
+            
             batch = tuple(t.to(device) for t in batch)
             input_ids, input_mask, segment_ids, label_ids = batch
 
@@ -116,9 +120,6 @@ output_model_file, output_config_file, log_dir, print_step, early_stop):
                     
                     if dev_loss < best_dev_loss:
                         best_dev_loss = dev_loss
-
-                    # if dev_auc > best_auc:
-                    #     best_auc = dev_auc
 
                         model_to_save = model.module if hasattr(
                             model, 'module') else model

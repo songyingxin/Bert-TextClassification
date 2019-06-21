@@ -69,7 +69,7 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
                         type=int,
                         help="Total batch size for dev.")
     parser.add_argument("--test_batch_size",
-                        default=8,
+                        default=32,
                         type=int,
                         help="Total batch size for test.")
 

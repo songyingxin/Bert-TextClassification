@@ -14,7 +14,7 @@ from pytorch_pretrained_bert.modeling import BertConfig, WEIGHTS_NAME, CONFIG_NA
 from pytorch_pretrained_bert.optimization import BertAdam
 
 from Utils.utils import get_device
-from Utils.Classifier_utils import load_data
+from Utils.MultiSentences_utils import load_data
 
 from Utils.train_evalute import train, evaluate
 
@@ -28,18 +28,20 @@ def main(config, model_times, myProcessor):
         os.makedirs(config.cache_dir + model_times)
 
     # Bert 模型输出文件
-    output_model_file = os.path.join(config.output_dir, model_times, WEIGHTS_NAME)  
-    output_config_file = os.path.join(config.output_dir, model_times,CONFIG_NAME)
+    output_model_file = os.path.join(
+        config.output_dir, model_times, WEIGHTS_NAME)
+    output_config_file = os.path.join(
+        config.output_dir, model_times, CONFIG_NAME)
 
     # 设备准备
     gpu_ids = [int(device_id) for device_id in config.gpu_ids.split()]
-    device, n_gpu = get_device(gpu_ids[0])  
+    device, n_gpu = get_device(gpu_ids[0])
     if n_gpu > 1:
         n_gpu = len(gpu_ids)
 
     config.train_batch_size = config.train_batch_size // config.gradient_accumulation_steps
 
-    # 设定随机种子 
+    # 设定随机种子
     random.seed(config.seed)
     np.random.seed(config.seed)
     torch.manual_seed(config.seed)
@@ -57,46 +59,24 @@ def main(config, model_times, myProcessor):
     if config.do_train:
 
         train_dataloader, train_examples_len = load_data(
-            config.data_dir, tokenizer, processor, config.max_seq_length, config.train_batch_size, "train")
+            config.data_dir, tokenizer, processor, config.max_seq_length, config.train_batch_size, "train", config.max_sentence_num)
         dev_dataloader, _ = load_data(
-            config.data_dir, tokenizer, processor, config.max_seq_length, config.dev_batch_size, "dev")
+            config.data_dir, tokenizer, processor, config.max_seq_length, config.dev_batch_size, "dev", config.max_sentence_num)
 
         num_train_optimization_steps = int(
             train_examples_len / config.train_batch_size / config.gradient_accumulation_steps) * config.num_train_epochs
-        
+
         # 模型准备
         print("model name is {}".format(config.model_name))
-        if config.model_name == "BertOrigin":
-            from BertOrigin.BertOrigin import BertOrigin
-            model = BertOrigin.from_pretrained(
-                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
-        elif config.model_name == "BertCNN":
-            from BertCNN.BertCNN import BertCNN
-            filter_sizes = [int(val) for val in config.filter_sizes.split()]
-            model = BertCNN.from_pretrained(
-                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels, 
-                n_filters=config.filter_num, filter_sizes=filter_sizes)
-        elif config.model_name == "BertATT":
-            from BertATT.BertATT import BertATT
-            model = BertATT.from_pretrained(
+        if config.model_name == "BertHAN":
+            from BertHAN.BertHAN import BertHAN
+            model = BertHAN.from_pretrained(
                 config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels)
         
-        elif config.model_name == "BertRCNN":
-            from BertRCNN.BertRCNN import BertRCNN
-            model = BertRCNN.from_pretrained(
-                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels, rnn_hidden_size=config.hidden_size, num_layers=config.num_layers, bidirectional=config.bidirectional, dropout=config.dropout)
-
-        elif config.model_name == "BertCNNPlus":
-            from BertCNNPlus.BertCNNPlus import BertCNNPlus
-            filter_sizes = [int(val) for val in config.filter_sizes.split()]
-            model = BertCNNPlus.from_pretrained(
-                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels,
-                n_filters=config.filter_num, filter_sizes=filter_sizes)
-
         model.to(device)
 
         if n_gpu > 1:
-            model = torch.nn.DataParallel(model,device_ids=gpu_ids)
+            model = torch.nn.DataParallel(model, device_ids=gpu_ids)
 
         """ 优化器准备 """
         param_optimizer = list(model.named_parameters())
@@ -124,30 +104,14 @@ def main(config, model_times, myProcessor):
 
     # test 数据
     test_dataloader, _ = load_data(
-        config.data_dir, tokenizer, processor, config.max_seq_length, config.test_batch_size, "test")
+        config.data_dir, tokenizer, processor, config.max_seq_length, config.test_batch_size, "test", config.max_sentence_num)
 
-    # 加载模型 
+    # 加载模型
     bert_config = BertConfig(output_config_file)
 
-    if config.model_name == "BertOrigin":
-        from BertOrigin.BertOrigin import BertOrigin
-        model = BertOrigin(bert_config, num_labels=num_labels)
-    elif config.model_name == "BertCNN":
-        from BertCNN.BertCNN import BertCNN
-        filter_sizes = [int(val) for val in config.filter_sizes.split()]
-        model = BertCNN(bert_config, num_labels=num_labels,
-                        n_filters=config.filter_num, filter_sizes=filter_sizes)
-    elif config.model_name == "BertATT":
-        from BertATT.BertATT import BertATT
-        model = BertATT(bert_config, num_labels=num_labels)
-    elif config.model_name == "BertRCNN":
-        from BertRCNN.BertRCNN import BertRCNN
-        model = BertRCNN(bert_config, num_labels, config.hidden_size, config.num_layers, config.bidirectional, config.dropout)
-    elif config.model_name == "BertCNNPlus":
-        from BertCNNPlus.BertCNNPlus import BertCNNPlus
-        filter_sizes = [int(val) for val in config.filter_sizes.split()]
-        model = BertCNNPlus(bert_config, num_labels=num_labels,
-                            n_filters=config.filter_num, filter_sizes=filter_sizes)
+    if config.model_name == "BertHAN":
+        from BertHAN.BertHAN import BertHAN
+        model = BertHAN(bert_config, num_labels=num_labels)
 
     model.load_state_dict(torch.load(output_model_file))
     model.to(device)
@@ -160,7 +124,8 @@ def main(config, model_times, myProcessor):
     test_loss, test_acc, test_report, test_auc = evaluate(
         model, test_dataloader, criterion, device, label_list)
     print("-------------- Test -------------")
-    print(f'\t  Loss: {test_loss: .3f} | Acc: {test_acc*100: .3f} % | AUC:{test_auc}')
+    print(
+        f'\t  Loss: {test_loss: .3f} | Acc: {test_acc*100: .3f} % | AUC:{test_auc}')
 
     for label in label_list:
         print('\t {}: Precision: {} | recall: {} | f1 score: {}'.format(

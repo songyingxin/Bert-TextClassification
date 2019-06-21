@@ -80,7 +80,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
 
         input_ids = tokenizer.convert_tokens_to_ids(tokens) # 将词转化为对应词表中的id
 
-        # input_mask: 1 表示真正的真正的 tokens， 0 表示是 padding tokens
+        # input_mask: 1 表示真正的 tokens， 0 表示是 padding tokens
         input_mask = [1] * len(input_ids)
         padding = [0] * (max_seq_length - len(input_ids))
 
@@ -134,6 +134,9 @@ def convert_features_to_tensors(features, batch_size):
 
     data = TensorDataset(all_input_ids, all_input_mask,
                          all_segment_ids, all_label_ids)
+                         
+    # dataloader = DataLoader(data, sampler=sampler,
+    #                         batch_size=batch_size, drop_last=True)
     sampler = RandomSampler(data)
     dataloader = DataLoader(data, sampler=sampler, batch_size=batch_size)
 

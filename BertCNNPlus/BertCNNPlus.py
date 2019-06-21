@@ -25,21 +25,30 @@ class BertCNNPlus(BertPreTrainedModel):
         self.apply(self.init_bert_weights)
 
     def forward(self, input_ids, token_type_ids=None, attention_mask=None, labels=None):
+        """
+        Args:
+            input_ids: 词对应的 id
+            token_type_ids: 区分句子，0 为第一句，1表示第二句
+            attention_mask: 区分 padding 与 token， 1表示是token，0 为padding
+        """
         encoded_layers, hidden_state = self.bert(
             input_ids, token_type_ids, attention_mask, output_all_encoded_layers=False)
+        # encoded_layers: [batch_size, seq_len, bert_dim=768]
+        # hidden_state: [batch_size, bert_dim=768]
 
         encoded_layers = self.dropout(encoded_layers)
         hidden_state = self.dropout(hidden_state)
 
         encoded_layers = encoded_layers.permute(0, 2, 1)
-
+        # encoded_layers: [batch_size, bert_dim, seq_len]
+        
         conved = self.convs(encoded_layers)
 
         pooled = [F.max_pool1d(conv, conv.shape[2]).squeeze(2)
                   for conv in conved]
 
-        cat = self.dropout(torch.cat(pooled, dim=1))
-        cat = self.dropout(torch.cat([cat, hidden_state], dim=1))
+        cat = torch.cat(pooled, dim=1)
+        cat = torch.cat([cat, hidden_state], dim=1)
 
         logits = self.classifier(cat)
 

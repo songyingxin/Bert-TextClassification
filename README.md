@@ -50,11 +50,11 @@ python3 run_CNews.py --max_seq_length=512
 
 model_name | loss | acc | f1 
 --- |--- | --- | --- 
-BertOrigin | 0.088 | 97.40 | 97.39 
+BertOrigin(base) | 0.088 | 97.40 | 97.39 
  |       |  |  
  |       |  |  
  |       |  |  
- |       |  |  
+ BertHAN | 0.103 | 97.49 | 97.48 
  |       |  |  
 
 ### SST-2
@@ -69,8 +69,10 @@ python3 run_SST2.py --max_seq_length=65   # test
 | BertOrigin(base)     | 0.170 | 94.458 | 94.458 |
 | BertCNN (5,6) (base) | 0.148 | 94.607 | 94.62  |
 | BertATT (base)       | 0.162 | 94.211 | 94.22  |
-| BertRCNN (base)      | 0.164 | 93.26  | 94.16  |
-| BertCNNPlus (base)   |       |        |        |
+| BertRCNN (base)      | 0.145 | 95.151 | 95.15  |
+| BertCNNPlus (base)   | 0.160 | 94.508 | 94.51  |
+
+
 
 ### Yelp
 

@@ -1,14 +1,13 @@
 # coding=utf-8
 from main import main
-from BertOrigin import args
 
 if __name__ == "__main__":
 
-    model_name = "BertOrigin"
+    model_name = "BertCNN"
     data_dir = "/search/hadoop02/suanfa/songyingxin/data/cnews"  
-    output_dir = ".cnews_output"
-    cache_dir = ".cnews_cache"
-    log_dir = ".cnews_log"
+    output_dir = ".cnews_output/"
+    cache_dir = ".cnews_cache/"
+    log_dir = ".cnews_log/"
 
     model_times = "model_1/"   # 第几次保存的模型，主要是用来获取多次最佳结果
 
