@@ -4,11 +4,26 @@
 
 ## Requirements
 
-- Pytorch
-- scikit-learn
-- numpy
-- pytorch_pretrained_bert
-- tensorboardX
+下面命令还未经过完整测试， 可以参考。
+
+推荐使用 Anconda 来管理包环境， 我采用的是 Anconda python 3.7，其余 3.0 以上应该都可以， 推荐新建一个环境来做测试。
+
+```
+conda create -n BertText  # 创建新环境
+conda activate BertText   # 激活指定环境
+
+Pytorch ： [conda install pytorch torchvision cudatoolkit=9.0 -c pytorch](https://pytorch.org/get-started/locally/)
+
+scikit-learn： conda install scikit-learn
+
+pytorch-pretrained-BERT： pip install pytorch-pretrained-bert
+
+numpy： conda install numpy
+
+tensorboardx： pip install tensorboardX
+
+tensorflow： pip install tensorflow
+```
 
 ## 数据集
 
