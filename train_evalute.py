@@ -6,7 +6,7 @@ import torch
 from tensorboardX import SummaryWriter
 import time
 
-from .utils import classifiction_metric
+from Utils.utils import classifiction_metric
 
 
 def train(epoch_num, n_gpu, model, train_dataloader, dev_dataloader, 
@@ -60,7 +60,7 @@ output_model_file, output_config_file, log_dir, print_step, early_stop):
             model.train()
             
             batch = tuple(t.to(device) for t in batch)
-            input_ids, input_mask, segment_ids, label_ids = batch
+            _, input_ids, input_mask, segment_ids, label_ids = batch
 
             logits = model(input_ids, segment_ids, input_mask, labels=None)
             loss = criterion(logits.view(-1, len(label_list)), label_ids.view(-1))
@@ -143,7 +143,7 @@ def evaluate(model, dataloader, criterion, device, label_list):
 
     epoch_loss = 0
 
-    for input_ids, input_mask, segment_ids, label_ids in tqdm(dataloader, desc="Eval"):
+    for _, input_ids, input_mask, segment_ids, label_ids in tqdm(dataloader, desc="Eval"):
         input_ids = input_ids.to(device)
         input_mask = input_mask.to(device)
         segment_ids = segment_ids.to(device)
@@ -164,3 +164,39 @@ def evaluate(model, dataloader, criterion, device, label_list):
 
     acc, report, auc = classifiction_metric(all_preds, all_labels, label_list)
     return epoch_loss/len(dataloader), acc, report, auc
+
+
+def evaluate_save(model, dataloader, criterion, device, label_list):
+
+    model.eval()
+
+    all_preds = np.array([], dtype=int)
+    all_labels = np.array([], dtype=int)
+    all_idxs = np.array([], dtype=int)
+
+    epoch_loss = 0
+
+    for idxs, input_ids, input_mask, segment_ids, label_ids in tqdm(dataloader, desc="Eval"):
+        input_ids = input_ids.to(device)
+        input_mask = input_mask.to(device)
+        segment_ids = segment_ids.to(device)
+        label_ids = label_ids.to(device)
+
+        with torch.no_grad():
+            logits = model(input_ids, segment_ids, input_mask, labels=None)
+        loss = criterion(logits.view(-1, len(label_list)), label_ids.view(-1))
+
+        preds = logits.detach().cpu().numpy()
+        outputs = np.argmax(preds, axis=1)
+        all_preds = np.append(all_preds, outputs)
+
+        label_ids = label_ids.to('cpu').numpy()
+        all_labels = np.append(all_labels, label_ids)
+
+        idxs = idxs.detach().cpu().numpy()
+        all_idxs = np.append(all_idxs, idxs)
+
+        epoch_loss += loss.mean().item()
+
+    acc, report, auc = classifiction_metric(all_preds, all_labels, label_list)
+    return epoch_loss/len(dataloader), acc, report, auc, all_idxs, all_labels, all_preds

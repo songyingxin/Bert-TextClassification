@@ -14,12 +14,12 @@ from pytorch_pretrained_bert.modeling import BertConfig, WEIGHTS_NAME, CONFIG_NA
 from pytorch_pretrained_bert.optimization import BertAdam
 
 from Utils.utils import get_device
-from Utils.Classifier_utils import load_data
+from Utils.load_datatsets import load_data
 
-from Utils.train_evalute import train, evaluate
+from train_evalute import train, evaluate, evaluate_save
 
 
-def main(config, model_times, myProcessor):
+def main(config, model_times, label_list):
 
     if not os.path.exists(config.output_dir + model_times):
         os.makedirs(config.output_dir + model_times)
@@ -47,20 +47,19 @@ def main(config, model_times, myProcessor):
         torch.cuda.manual_seed_all(config.seed)
 
     # 数据准备
-    processor = myProcessor()  # 整个文件的代码只需要改此处即可
     tokenizer = BertTokenizer.from_pretrained(
         config.bert_vocab_file, do_lower_case=config.do_lower_case)  # 分词器选择
-    label_list = processor.get_labels()
+
     num_labels = len(label_list)
 
     # Train and dev
     if config.do_train:
 
         train_dataloader, train_examples_len = load_data(
-            config.data_dir, tokenizer, processor, config.max_seq_length, config.train_batch_size, "train")
+            config.data_dir, tokenizer, config.max_seq_length, config.train_batch_size, "train", label_list)
         dev_dataloader, _ = load_data(
-            config.data_dir, tokenizer, processor, config.max_seq_length, config.dev_batch_size, "dev")
-
+            config.data_dir, tokenizer, config.max_seq_length, config.dev_batch_size, "dev", label_list)
+        
         num_train_optimization_steps = int(
             train_examples_len / config.train_batch_size / config.gradient_accumulation_steps) * config.num_train_epochs
         
@@ -124,7 +123,7 @@ def main(config, model_times, myProcessor):
 
     # test 数据
     test_dataloader, _ = load_data(
-        config.data_dir, tokenizer, processor, config.max_seq_length, config.test_batch_size, "test")
+        config.data_dir, tokenizer, config.max_seq_length, config.test_batch_size, "test", label_list)
 
     # 加载模型 
     bert_config = BertConfig(output_config_file)
@@ -157,7 +156,7 @@ def main(config, model_times, myProcessor):
     criterion = criterion.to(device)
 
     # test the model
-    test_loss, test_acc, test_report, test_auc = evaluate(
+    test_loss, test_acc, test_report, test_auc, all_idx, all_labels, all_preds = evaluate_save(
         model, test_dataloader, criterion, device, label_list)
     print("-------------- Test -------------")
     print(f'\t  Loss: {test_loss: .3f} | Acc: {test_acc*100: .3f} % | AUC:{test_auc}')

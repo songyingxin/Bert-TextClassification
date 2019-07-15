@@ -4,7 +4,8 @@ from main import main
 
 if __name__ == "__main__":
 
-    model_name = "BertRCNN"
+    model_name = "BertOrigin"
+    label_list = ['0', '1']
     data_dir = "/search/hadoop02/suanfa/songyingxin/data/SST-2"
     output_dir = ".sst_output/" 
     cache_dir = ".sst_cache"
@@ -19,8 +20,6 @@ if __name__ == "__main__":
     # # bert-large
     # bert_vocab_file = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-large-uncased-vocab.txt"
     # bert_model_dir = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-large-uncased"
-    
-    from Processors.SST2Processor import Sst2Processor
 
     if model_name == "BertOrigin":
         from BertOrigin import args
@@ -39,6 +38,6 @@ if __name__ == "__main__":
 
     main(args.get_args(data_dir, output_dir, cache_dir,
                            bert_vocab_file, bert_model_dir, log_dir),
-             model_times, Sst2Processor)
+             model_times, label_list)
         
 

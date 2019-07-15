@@ -4,6 +4,8 @@ from main import main
 if __name__ == "__main__":
 
     model_name = "BertCNN"
+    label_list = [u'房产', u'科技', u'财经', u'游戏',
+                  u'娱乐', u'时尚', u'时政', u'家居', u'教育', u'体育']
     data_dir = "/search/hadoop02/suanfa/songyingxin/data/cnews"  
     output_dir = ".cnews_output/"
     cache_dir = ".cnews_cache/"
@@ -14,7 +16,6 @@ if __name__ == "__main__":
     bert_vocab_file = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-base-chinese-vocab.txt"  # 需改
     bert_model_dir = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-base-chinese"  
 
-    from Processors.NewsProcessor import NewsProcessor
     if model_name == "BertOrigin":
         from BertOrigin import args
 
@@ -27,6 +28,6 @@ if __name__ == "__main__":
     elif model_name == "BertRCNN":
         from BertRCNN import args
     
-    main(args.get_args(data_dir, output_dir, cache_dir,
-                           bert_vocab_file, bert_model_dir, log_dir),
-             model_times, NewsProcessor)
+    main(args.get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, log_dir),
+             model_times, label_list)
+

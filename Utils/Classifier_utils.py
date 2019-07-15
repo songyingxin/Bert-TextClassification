@@ -28,7 +28,8 @@ class InputExample(object):
 class InputFeatures(object):
     """A single set of features of data."""
 
-    def __init__(self, input_ids, input_mask, segment_ids, label_id):
+    def __init__(self, idx, input_ids, input_mask, segment_ids, label_id):
+        self.idx = idx
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
@@ -58,7 +59,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
 
         tokens_b = None
         if example.text_b:
-            tokens_b = tokenizer.tokenize(example.text_b) # 分词
+            tokens_b = tokenizer.tokenize(example.text_b)  # 分词
             # “-3” 是因为句子中有[CLS], [SEP], [SEP] 三个标识，可参见论文
             # [CLS] is this jack ##son ##ville ? [SEP] no it is not . [SEP]
             _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
@@ -78,7 +79,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
             tokens += tokens_b + ["[SEP]"]
             segment_ids += [1] * (len(tokens_b) + 1)
 
-        input_ids = tokenizer.convert_tokens_to_ids(tokens) # 将词转化为对应词表中的id
+        input_ids = tokenizer.convert_tokens_to_ids(tokens)  # 将词转化为对应词表中的id
 
         # input_mask: 1 表示真正的 tokens， 0 表示是 padding tokens
         input_mask = [1] * len(input_ids)
@@ -93,9 +94,11 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
         assert len(segment_ids) == max_seq_length
 
         label_id = label_map[example.label]
+        idx = int(example.guid)
 
         features.append(
-            InputFeatures(input_ids=input_ids,
+            InputFeatures(idx=idx, 
+                          input_ids=input_ids,
                           input_mask=input_mask,
                           segment_ids=segment_ids,
                           label_id=label_id))
@@ -115,7 +118,7 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
             tokens_b.pop()
 
 
-def convert_features_to_tensors(features, batch_size):
+def convert_features_to_tensors(features, batch_size, data_type):
     """ 将 features 转化为 tensor，并塞入迭代器
     Args:
         features: InputFeatures, 样本 features 信息
@@ -123,6 +126,8 @@ def convert_features_to_tensors(features, batch_size):
     Returns:
         dataloader: 以 batch_size 为基础的迭代器
     """
+    all_idx_ids = torch.tensor(
+        [f.idx for f in features], dtype=torch.long)
     all_input_ids = torch.tensor(
         [f.input_ids for f in features], dtype=torch.long)
     all_input_mask = torch.tensor(
@@ -132,48 +137,14 @@ def convert_features_to_tensors(features, batch_size):
     all_label_ids = torch.tensor(
         [f.label_id for f in features], dtype=torch.long)
 
-    data = TensorDataset(all_input_ids, all_input_mask,
+    data = TensorDataset(all_idx_ids, all_input_ids, all_input_mask,
                          all_segment_ids, all_label_ids)
-                         
-    # dataloader = DataLoader(data, sampler=sampler,
-    #                         batch_size=batch_size, drop_last=True)
+
     sampler = RandomSampler(data)
-    dataloader = DataLoader(data, sampler=sampler, batch_size=batch_size)
+    if data_type == "test":
+        dataloader = DataLoader(data, sampler=sampler, batch_size=batch_size)
+    else:
+        dataloader = DataLoader(data, sampler=sampler,
+                                batch_size=batch_size, drop_last=True)
 
     return dataloader
-
-
-def load_data(data_dir, tokenizer, processor, max_length, batch_size, data_type):
-    """ 导入数据， 并返回对应的迭代器
-    Args: 
-        data_dir: 原始数据目录
-        tokenizer： 分词器
-        processor: 定义的 processor
-        max_length: 句子最大长度
-        batch_size: batch 大小
-        data_type: "train" or "dev", "test" ， 表示加载哪个数据
-    
-    Returns:
-        dataloader: 数据迭代器
-        examples_len: 样本大小
-    """
-
-    label_list = processor.get_labels()
-
-    if data_type == "train":
-        examples = processor.get_train_examples(data_dir)
-    elif data_type == "dev":
-        examples = processor.get_dev_examples(data_dir)
-    elif data_type == "test":
-        examples = processor.get_test_examples(data_dir)
-    else:
-        raise RuntimeError("should be train or dev or test")
-
-    features = convert_examples_to_features(
-        examples, label_list, max_length, tokenizer)
-    
-    dataloader = convert_features_to_tensors(features, batch_size)
-
-    examples_len = len(examples)
-
-    return dataloader, examples_len
