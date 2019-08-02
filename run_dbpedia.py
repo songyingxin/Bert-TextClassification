@@ -5,11 +5,11 @@ from main import main
 if __name__ == "__main__":
 
     model_name = "BertOrigin"
-    label_list = ['0', '1']
-    data_dir = "/search/hadoop02/suanfa/songyingxin/SongWork/PaperDataset/sst_2"
-    output_dir = ".sst_output/" 
-    cache_dir = ".sst_cache"
-    log_dir = ".sst_log/" 
+    label_list = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14']
+    data_dir = "/search/hadoop02/suanfa/songyingxin/SongWork/PaperDataset/dbpedia"
+    output_dir = ".dbpedia_output/"
+    cache_dir = ".dbpedia_cache"
+    log_dir = ".dbpedia_log/"
 
     model_times = "model_1/"   # 第几次保存的模型，主要是用来获取最佳结果
 
@@ -37,7 +37,5 @@ if __name__ == "__main__":
         from BertCNNPlus import args
 
     main(args.get_args(data_dir, output_dir, cache_dir,
-                           bert_vocab_file, bert_model_dir, log_dir),
-             model_times, label_list)
-        
-
+                       bert_vocab_file, bert_model_dir, log_dir),
+         model_times, label_list)

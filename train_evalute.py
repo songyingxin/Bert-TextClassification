@@ -40,6 +40,7 @@ output_model_file, output_config_file, log_dir, print_step, early_stop):
 
     best_dev_loss = float('inf')
     best_auc = 0
+    best_acc = 0
 
     global_step = 0
     for epoch in range(int(epoch_num)):
@@ -118,8 +119,18 @@ output_model_file, output_config_file, log_dir, print_step, early_stop):
                         writer.add_scalar(label + ":" + "f1/dev",
                                         dev_report[label]['f1-score'], c)
                     
-                    if dev_loss < best_dev_loss:
-                        best_dev_loss = dev_loss
+                    # # 以损失取优
+                    # if dev_loss < best_dev_loss:
+                    #     best_dev_loss = dev_loss
+                    
+                    # 以 acc 取优
+                    if dev_acc > best_acc:
+                        best_acc = dev_acc
+                        
+                    # 以 auc 取优
+                    # if dev_auc > best_auc:
+                    #     best_auc = dev_auc
+
 
                         model_to_save = model.module if hasattr(
                             model, 'module') else model

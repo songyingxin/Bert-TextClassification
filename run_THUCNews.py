@@ -3,10 +3,10 @@ from main import main
 
 if __name__ == "__main__":
 
-    model_name = "BertCNN"
+    model_name = "BertOrigin"
     label_list = [u'房产', u'科技', u'财经', u'游戏',
                   u'娱乐', u'时尚', u'时政', u'家居', u'教育', u'体育']
-    data_dir = "/search/hadoop02/suanfa/songyingxin/data/cnews"  
+    data_dir = "/search/hadoop02/suanfa/songyingxin/SongWork/PaperDataset/THUCNews"
     output_dir = ".cnews_output/"
     cache_dir = ".cnews_cache/"
     log_dir = ".cnews_log/"

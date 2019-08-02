@@ -93,7 +93,11 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
         assert len(input_mask) == max_seq_length
         assert len(segment_ids) == max_seq_length
 
-        label_id = label_map[example.label]
+        try:
+            label_id = label_map[example.label]
+        except:
+            print(example.label)
+            continue
         idx = int(example.guid)
 
         features.append(
