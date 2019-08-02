@@ -10,6 +10,9 @@ def get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, l
     parser.add_argument("--model_name", default="BertATT",
                         type=str, help="the name of model ")
 
+    parser.add_argument("--save_name", default="BertATT",
+                        type=str, help="the name file of model ")
+
     # 文件路径：数据目录， 缓存目录
     parser.add_argument("--data_dir",
                         default=data_dir,

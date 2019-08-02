@@ -11,7 +11,7 @@ if __name__ == "__main__":
     cache_dir = ".cnews_cache/"
     log_dir = ".cnews_log/"
 
-    model_times = "model_1/"   # 第几次保存的模型，主要是用来获取多次最佳结果
+    # model_times = "model_1/"   # 第几次保存的模型，主要是用来获取多次最佳结果
 
     bert_vocab_file = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-base-chinese-vocab.txt"  # 需改
     bert_model_dir = "/search/hadoop02/suanfa/songyingxin/pytorch_Bert/bert-base-chinese"  
@@ -28,6 +28,7 @@ if __name__ == "__main__":
     elif model_name == "BertRCNN":
         from BertRCNN import args
     
-    main(args.get_args(data_dir, output_dir, cache_dir, bert_vocab_file, bert_model_dir, log_dir),
-             model_times, label_list)
+    config = args.get_args(data_dir, output_dir, cache_dir,
+                           bert_vocab_file, bert_model_dir, log_dir)
+    main(config, config.save_name, label_list)
 

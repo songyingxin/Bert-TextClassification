@@ -5,11 +5,11 @@ from main import main
 if __name__ == "__main__":
 
     model_name = "BertOrigin"
-    label_list = ['1', '2', '3', '4', '5']
-    data_dir = "/search/hadoop02/suanfa/songyingxin/SongWork/PaperDataset/yelp_review_full"
-    output_dir = ".yelp_review_full_output/"
-    cache_dir = ".yelp_review_full_cache"
-    log_dir = ".yelp_review_full_log/"
+    label_list = ['1', '2']
+    data_dir = "/search/hadoop02/suanfa/songyingxin/SongWork/PaperDataset/yelp_review_polarity"
+    output_dir = ".yelp_review_polarity_output/"
+    cache_dir = ".yelp_review_polarity_cache"
+    log_dir = ".yelp_review_polarity_log/"
 
     # model_times = "model_1/"   # 第几次保存的模型，主要是用来获取最佳结果
 
