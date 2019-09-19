@@ -72,16 +72,16 @@
 
 ### 1. 长度实验
 
-| 模型                 | 50     | 100    | 150    | 200    | 250    | 300    | 350    | 400    | 450    | 500    |
+| 数据集               | 50     | 100    | 150    | 200    | 250    | 300    | 350    | 400    | 450    | 500    |
 | -------------------- | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ | ------ |
 | imdb                 | 81.572 | 86.792 | 89.828 | 91.176 | 92.148 | 92.808 | 93.280 | 93.672 | 93.772 | 93.996 |
-| ag_news              | 94.434 | 94.184 | 94.224 | 94.14  | 94.335 | 94.276 | 94.224 | 94.197 | 94.263 | 94.263 |
-| sst_2                | 92.546 | 93.119 | 92.661 | 92.89  | 93.005 | 93.463 | 93.005 | 93.119 | 93.119 | 93.225 |
-| dbpedia              |        |        |        |        |        |        |        | 99.183 | 99.227 | 99.25  |
-| yelp_review_full     | 59.596 | 64.414 | 67.358 |        | 66.463 |        |        |        |        | 69.976 |
+| ag_news              | 94.434 | 94.184 | 94.224 | 94.276 | 94.276 | 94.276 | 94.276 | 94.276 | 94.276 | 94.276 |
+| sst_2                | 92.546 | 93.119 | 93.119 | 93.005 | 93.005 | 93.463 | 93.005 | 93.119 | 93.119 | 93.225 |
+| dbpedia              | 99.120 | 99.153 | 99.162 | 99.169 | 99.175 | 99.179 | 99.181 | 99.183 | 99.227 | 99.25  |
+| yelp_review_full     | 59.596 | 64.414 | 66.358 | 66.769 | 67.463 |        |        |        | 69.457 | 69.976 |
 | yelp_review_polarity |        |        |        |        |        |        |        |        |        | 97.763 |
-| THUCNews             | 96.1   | 96.520 | 97.06  | 96.79  | 97.06  | 97.36  | 96.9   | 97.23  | 96.08  | 97.35  |
-| yahoo_answers        |        |        |        |        |        |        |        |        |        |        |
+| THUCNews             | 96.1   | 96.520 | 97.06  | 96.79  | 97.06  | 97.26  | 97.20  | 97.23  | 97.29  | 97.35  |
+| yahoo_answers        | 75.965 |        |        | 76.332 |        |        |        |        |        | 76.208 |
 
 ```
 python3 run_ag_news.py --max_seq_length=500 --num_train_epochs=5.0 --do_train --gpu_ids="4 5 6 7" --gradient_accumulation_steps=8 --print_step=100
@@ -89,13 +89,55 @@ python3 run_ag_news.py --max_seq_length=500 --num_train_epochs=5.0 --do_train --
 
 ## 融入超长文本
 
-
+| 模型               | THUCNews |
+| ------------------ | -------- |
+| Bert + Attention   |          |
+| Bert + max_pooling |          |
+| Bert + avg_pooling |          |
 
 
 
 ## 模型试验
 
 
+
+```
+python3 run_SST2.py --max_seq_length=100 --num_train_epochs=5.0 --do_train --gpu_ids="0" --gradient_accumulation_steps=8 --print_step=50
+```
+
+```
+python3 run_ag_news.py --max_seq_length=150 --num_train_epochs=5.0 --do_train --gpu_ids="1" --gradient_accumulation_steps=8 --print_step=100
+```
+
+```
+python3 run_dbpedia.py --max_seq_length=150 --num_train_epochs=5.0 --do_train --gpu_ids="2" --gradient_accumulation_steps=8 --print_step=100
+```
+
+```
+python3 run_imdb.py --max_seq_length=500 --num_train_epochs=5.0 --do_train --gpu_ids="3" --gradient_accumulation_steps=8 --print_step=100
+```
+
+```
+python3 run_THUCNews.py --max_seq_length=500 --num_train_epochs=5.0 --do_train --gpu_ids="4" --gradient_accumulation_steps=8 --print_step=100
+```
+
+```
+python3 run_yelp_review_polarity.py --max_seq_length=500 --num_train_epochs=5.0 --do_train --gpu_ids="5" --gradient_accumulation_steps=8 --print_step=100
+```
+
+
+
+
+
+|                  | imdb   | ag_news | sst2   | dbpedia | yelp_review_full | yelp_review_polarity | THUCNews | yahoo_answers |
+| ---------------- | ------ | ------- | ------ | ------- | ---------------- | -------------------- | -------- | ------------- |
+| BERT             | 93.996 | 94.276  | 93.225 | 99.250  | 69.976           | 97.763               | 97.35    | 76.208        |
+| Bert + TextCNN   |        |         |        |         |                  |                      |          |               |
+| BERT + LSTM      |        |         |        |         |                  |                      |          |               |
+| BERT + RCNN      |        |         |        |         |                  |                      |          |               |
+| BERT + Attention |        |         |        |         |                  |                      |          |               |
+| BERT + DPCNN     |        |         |        |         |                  |                      |          |               |
+| BERT + VDCN      |        |         |        |         |                  |                      |          |               |
 
 
 

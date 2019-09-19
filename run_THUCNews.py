@@ -3,7 +3,7 @@ from main import main
 
 if __name__ == "__main__":
 
-    model_name = "BertOrigin"
+    model_name = "BertLSTM"
     label_list = [u'房产', u'科技', u'财经', u'游戏',
                   u'娱乐', u'时尚', u'时政', u'家居', u'教育', u'体育']
     data_dir = "/search/hadoop02/suanfa/songyingxin/SongWork/PaperDataset/THUCNews"
@@ -22,11 +22,20 @@ if __name__ == "__main__":
     elif model_name == "BertCNN":
         from BertCNN import args
 
+    elif model_name == 'BertLSTM':
+        from BertLSTM import args
+
     elif model_name == "BertATT":
         from BertATT import args
 
     elif model_name == "BertRCNN":
         from BertRCNN import args
+
+    elif model_name == "BertCNNPlus":
+        from BertCNNPlus import args
+
+    elif model_name == "BertDPCNN":
+        from BertDPCNN import args
     
     config = args.get_args(data_dir, output_dir, cache_dir,
                            bert_vocab_file, bert_model_dir, log_dir)

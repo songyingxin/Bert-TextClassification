@@ -75,6 +75,11 @@ def main(config, model_times, label_list):
             model = BertCNN.from_pretrained(
                 config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels, 
                 n_filters=config.filter_num, filter_sizes=filter_sizes)
+        elif config.model_name == 'BertLSTM':
+            from BertLSTM.BertLSTM import BertLSTM
+            model = BertLSTM.from_pretrained(
+                config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels, rnn_hidden_size=config.hidden_size, num_layers=config.num_layers, bidirectional=config.bidirectional, dropout=config.dropout)
+
         elif config.model_name == "BertATT":
             from BertATT.BertATT import BertATT
             model = BertATT.from_pretrained(
@@ -91,6 +96,11 @@ def main(config, model_times, label_list):
             model = BertCNNPlus.from_pretrained(
                 config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels,
                 n_filters=config.filter_num, filter_sizes=filter_sizes)
+        elif config.model_name == "BertDPCNN":
+            from BertDPCNN.BertDPCNN import BertDPCNN
+            model = BertDPCNN.from_pretrained(config.bert_model_dir, cache_dir=config.cache_dir, num_labels=num_labels, filter_num=config.filter_num)
+
+
 
         model.to(device)
 
@@ -136,6 +146,10 @@ def main(config, model_times, label_list):
         filter_sizes = [int(val) for val in config.filter_sizes.split()]
         model = BertCNN(bert_config, num_labels=num_labels,
                         n_filters=config.filter_num, filter_sizes=filter_sizes)
+    elif config.model_name == 'BertLSTM':
+        from BertLSTM.BertLSTM import BertLSTM
+        model = BertLSTM(bert_config, num_labels, config.hidden_size,
+                         config.num_layers, config.bidirectional, config.dropout)
     elif config.model_name == "BertATT":
         from BertATT.BertATT import BertATT
         model = BertATT(bert_config, num_labels=num_labels)
@@ -147,6 +161,10 @@ def main(config, model_times, label_list):
         filter_sizes = [int(val) for val in config.filter_sizes.split()]
         model = BertCNNPlus(bert_config, num_labels=num_labels,
                             n_filters=config.filter_num, filter_sizes=filter_sizes)
+    elif config.model_name == "BertDPCNN":
+        from BertDPCNN.BertDPCNN import BertDPCNN
+        model = BertDPCNN(bert_config, num_labels=num_labels, filter_num=config.filter_num)
+
 
     model.load_state_dict(torch.load(output_model_file))
     model.to(device)

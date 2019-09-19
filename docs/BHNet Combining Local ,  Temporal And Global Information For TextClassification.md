@@ -58,32 +58,31 @@ When adapt BERT fine-tuning strategy to text classification task, we always get 
 
 There are two kinds of BERT models, which have a big difference in model size and poarameter quantity. BERT-base model contains an encoder with 12 Transformer blocks, 12 self-attention heads, 110M parameters and the hidden size of 768. BERT-large model contains an encoder with 24 Transformer blocks, 16 self-attention heads, 340M parameters and the hidden size of 1024.
 
-BERT takes an input of a sequence of no more than 512 tokens and outputs the representation of the sequence. In the section, the input sentence is like that: `[CLS] + sentence`, where [CLS] contains the special classification embedding. 
-
-1) **BERT : ** In this model, we taks the final hidden state $h$ of the first token [CLS] as the representation of the whole sequence. A simple softmax classifier is added to the top of BERT to predict the probability of label c:
+BERT takes an input of a sequence of noT more than 512 tokens and outputs the representation of the sequence. In the section, the input sentence is like that: `[CLS] + sentence`, where [CLS] contains the special classification embedding.  
 $$
-h = \text{BERT}(s) \\
+h, O = BERT(S)
+$$
+The output of BERT consists of two parts, where $h \in R^d $ is the final hidden state of the first token [CLS] and $O \in R^{|S| \times d}$ is the context representation matrix of the sequence. Beyond on this, i conducted a detailed experiment that explored the performance of different models.
+
+1) **BERT : ** In this model, we taks the final hidden state $h$ as the representation of the whole sequence. A simple softmax classifier is added to the top of BERT to predict the probability of label c:
+$$
 p(c|h) = \text{softmax}(Wh)
 $$
 where $W$ is the task-specific parameter matrix. We fine-tune all the parameters from BERT as well as W jointly by maximizing the log-probability of the correct label.
 
-2) **BERT + TextCNN**: In this model, we tasks all the final hidden state matrix $O$ of the setence tokens as the representation of the whole sequence. Then we apply CNN to extract the local features of $O$ and perform max-pooling on the extracted features to get the final representation $h_{cnn}$.  
+2) **BERT + TextCNN**: In this model, we tasks all the final hidden state matrix $O$ of the setence tokens as the representation of the whole sequence. Then we apply TextCNN to extract the local features of $O$  to get the final representation $h_{cnn}$.  
 $$
-O = \text{BERT}(s)  \\
 h_{cnn} = \text{TextCNN}(O)  \\
 p(c|h_{cnn}) = \text{softmax}(W_{cnn}h_{cnn})
 $$
-where $W_{cnn}$ is the specific parameter matrix for BERT + TextCNN.
-
-3) **BERT + LSTM: ** As described in 2), we first obtain the representation matrix $O$ of the sentence .Then we apply LSTM to enhance the sequential information considering that Transformer adopts Position Embedding to capture sequential information. Finally, we take the last token hidden state $h_{lstm}$ of LSTM as the final representation and feed it into softmax classifier. The output layer is like that:
+3) **BERT + LSTM: **  We apply Bi-LSTM to enhance the sequential information considering that Transformer adopts Position Embedding to capture sequential information. Finally, we take the last token hidden state $h_{lstm}$ of LSTM as the final representation and feed it into softmax classifier. The output layer is like that:
 $$
-O = BERT(s) \\
 h_{lstm} = \text{LSTM}(O) \\
 p(c|h_{lstm}) = \text{softmax}(W_{lstm}h_{lstm})
 $$
 where $W_{lstm}$ is the specific parameter matrix for BERT + LSTM.
 
-4) **BERT + RCNN:**  Same as 3), we first get the representation matrix O of the input sentence, and $o_i$ represent the bert representation of token $i$. Then we use bidirectional LSTM to get the contextual representation of each token: $c^l_i, c_i^r$. To get the final representation  of token, we concat the output of bidirectional LSTM and the output of BERT:
+4) **BERT + RCNN:**  We use bidirectional LSTM to get the contextual representation of each token: $c^l_i, c_i^r$. To get the final representation  of token, we concat the output of bidirectional LSTM and the output of BERT:
 $$
 x_i = [c_i^l; o_i, c_i^r]
 $$
@@ -96,9 +95,15 @@ Finally, we use softmax classifier to get the probability of each class:
 $$
 p(c|y) = \text{softmax}(W_{rcnn}y)
 $$
-5) **BERT + Attention: ** 
-
+5) **BERT + Attention: ** We add an Attention Layer upon $O$ to get the final representation of the sentence and feed the representation $v$  into the softmax classifier.
+$$
+\alpha_i = \frac{exp(O_i^Tu_s)}{\sum_i exp(O_i^Tu_s)} \\
+v = \sum_i \alpha_i O_i \\
+p(c|v) = softmax(W_v v)
+$$
 6) **BERT +  DPCNN: **
+
+
 
 7) **BERT + VDCN: **
 

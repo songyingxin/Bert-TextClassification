@@ -4,7 +4,7 @@ from main import main
 
 if __name__ == "__main__":
 
-    model_name = "BertOrigin"
+    model_name = "BertLSTM"
     label_list = ['0', '1']
     data_dir = "/search/hadoop02/suanfa/songyingxin/SongWork/PaperDataset/imdb"
     output_dir = ".imdb_output/"
@@ -27,6 +27,9 @@ if __name__ == "__main__":
     elif model_name == "BertCNN":
         from BertCNN import args
 
+    elif model_name == 'BertLSTM':
+        from BertLSTM import args
+
     elif model_name == "BertATT":
         from BertATT import args
 
@@ -35,6 +38,9 @@ if __name__ == "__main__":
 
     elif model_name == "BertCNNPlus":
         from BertCNNPlus import args
+
+    elif model_name == "BertDPCNN":
+        from BertDPCNN import args
 
     config = args.get_args(data_dir, output_dir, cache_dir,bert_vocab_file, bert_model_dir, log_dir)
 
